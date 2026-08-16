@@ -733,3 +733,44 @@ input:focus, select:focus {
 [data-theme="light"] .row-due-highlight:hover {
   background-color: rgba(225, 29, 72, 0.24) !important;
 }
+
+/* Ensure auth view has comfortable mobile scroll clearance */
+#view-auth {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(100vh - 120px);
+  padding-bottom: 2rem;
+  transition: transform 0.3s ease;
+}
+
+@media (max-width: 640px) {
+  #view-auth {
+    justify-content: flex-start;
+    padding-top: 1.5rem;
+    padding-bottom: 18rem; /* Extra buffer space so the button can scroll well above the keyboard */
+  }
+
+  #auth-owner-pane {
+    padding-bottom: 1rem;
+  }
+
+  #btn-login-owner {
+    margin-top: 1rem;
+    width: 100%;
+  }
+}
+
+/* Clickable cells: pointer cursor only, no background color changes */
+.clickable-cell {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent; /* Prevents mobile tap flash/blue box */
+  user-select: none;
+}
+
+/* Ensure hover and active states do not alter the background color */
+.clickable-cell:hover,
+.clickable-cell:active,
+.clickable-cell:focus {
+  background-color: inherit !important;
+}
