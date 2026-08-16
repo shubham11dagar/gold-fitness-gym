@@ -1,15 +1,16 @@
 /* ==========================================================================
-   AURA GYM - COMPLETE CLIENT ENGINE (WITH CUSTOM PLAN DURATION SUPPORT)
-   - Custom Plan: Enter any manual number of days (e.g., 1, 2, 20, 45 days)
+   AURA GYM - COMPLETE CLIENT ENGINE
+   - Mobile Keyboard Auto-Dismiss: Calls blur() on Enter, Go, and Form Submits
+   - Custom Plan Support: Full manual day input (e.g. 1, 20, 45 days)
+   - Original Classic Theme Toggle: Restored with '🌓'
    - Full Admission Performa: Plan, Start/End Dates, Dues, Paid, Notes
    - Optional Phone: Defaults to unique Member ID if phone is omitted
-   - Login: Supports Phone Number OR Member ID (e.g., MEM-1024)
-   - Owner Row Click: Clicking any member row opens their full Member Card view
-   - Dynamic Navigation: Replaces "Log Out" with "← Back to Hub" when Owner inspects
+   - Dual-Mode Member Card: Allows Owner to inspect full card with "← Back to Hub"
    - Date Format: D Mon YYYY (e.g. 2 Jul 2026)
    - Table Display: Plan Start Date column enabled for quick ledger tracking
-   - Owner Protection: PIN verified in Google Sheets 'Admin' tab with progressive lockout
+   - Owner Security: PIN verified in Google Sheets 'Admin' tab with progressive lockout
    - Persistent Sessions: 15-day sliding inactivity auto-login for Owner & Members
+   - Single-Pass Loading: Zero redundant spinners on login
    ========================================================================== */
 
 const CONFIG = {
@@ -52,6 +53,13 @@ const State = {
   timer: null,
   lockoutInterval: null
 };
+
+// --- MOBILE KEYBOARD DISMISSAL HELPER ---
+function dismissMobileKeyboard() {
+  if (document.activeElement && typeof document.activeElement.blur === "function") {
+    document.activeElement.blur();
+  }
+}
 
 // --- INITIALIZATION ---
 document.addEventListener("DOMContentLoaded", () => {
@@ -118,6 +126,7 @@ function checkOwnerAutoLogin() {
 }
 
 function handleOwnerExit() {
+  dismissMobileKeyboard();
   clearOwnerSession();
   const pinInput = document.getElementById("input-owner-pin");
   if (pinInput) pinInput.value = "";
@@ -170,6 +179,7 @@ function checkAutoLogin() {
 }
 
 function handleMemberLogout() {
+  dismissMobileKeyboard();
   clearMemberSession();
   const loginInput = document.getElementById("input-member-phone");
   if (loginInput) loginInput.value = "";
@@ -180,12 +190,14 @@ function handleMemberLogout() {
 
 // --- OWNER ROW-INSPECTION NAVIGATION ---
 function inspectMemberCard(memberId) {
+  dismissMobileKeyboard();
   State.isOwnerInspecting = true;
   State.activeIdentifier = memberId;
   switchView("member", true);
 }
 
 function returnToOwnerHub() {
+  dismissMobileKeyboard();
   State.isOwnerInspecting = false;
   switchView("owner", true);
 }
@@ -377,7 +389,7 @@ function setOwnerTab(tab) {
   }
 }
 
-// --- EVENT BINDINGS ---
+// --- EVENT BINDINGS & MOBILE KEYBOARD LISTENERS ---
 function setupEvents() {
   const tabMember = document.getElementById("tab-member");
   const tabOwner = document.getElementById("tab-owner");
@@ -404,15 +416,36 @@ function setupEvents() {
 
   // Member Login
   document.getElementById("btn-login-member")?.addEventListener("click", handleMemberLogin);
+  document.getElementById("input-member-phone")?.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      dismissMobileKeyboard();
+      handleMemberLogin();
+    }
+  });
 
   // Owner PIN Login
   document.getElementById("btn-login-owner")?.addEventListener("click", handleOwnerPinLogin);
   document.getElementById("input-owner-pin")?.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") handleOwnerPinLogin();
+    if (e.key === "Enter") {
+      dismissMobileKeyboard();
+      handleOwnerPinLogin();
+    }
+  });
+
+  // Global Input Enter Key Listener to Hide Mobile Keyboard
+  document.querySelectorAll("input").forEach(input => {
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        dismissMobileKeyboard();
+      }
+    });
   });
 
   // Owner Controls
-  document.getElementById("btn-refresh")?.addEventListener("click", () => fetchData(false));
+  document.getElementById("btn-refresh")?.addEventListener("click", () => {
+    dismissMobileKeyboard();
+    fetchData(false);
+  });
   document.getElementById("owner-search")?.addEventListener("input", renderOwner);
 
   window.addEventListener("click", () => {
@@ -451,6 +484,7 @@ function setupEvents() {
 
 // --- SECURE OWNER PIN VERIFICATION ---
 async function handleOwnerPinLogin() {
+  dismissMobileKeyboard();
   if (checkLockoutStatus()) return showToast("Account temporarily locked. Please wait.", true);
 
   const pinInput = document.getElementById("input-owner-pin");
@@ -494,6 +528,7 @@ async function handleOwnerPinLogin() {
 
 // --- MEMBER LOGIN ---
 async function handleMemberLogin() {
+  dismissMobileKeyboard();
   const inputVal = document.getElementById("input-member-phone").value.trim();
   if (!inputVal) return showToast("Please enter Phone Number or Member ID", true);
 
@@ -703,9 +738,11 @@ function renderOwner() {
   });
 }
 
-// --- ADMISSION SUBMISSION (HANDLES CUSTOM PLAN & OPTIONAL PHONE) ---
+// --- ADMISSION SUBMISSION ---
 async function handleAdmission(e) {
   e.preventDefault();
+  dismissMobileKeyboard();
+
   const btn = document.getElementById("btn-save-member");
   btn.disabled = true;
   showSpinner("Recording admission to Google Sheets...");
@@ -852,6 +889,7 @@ function renderMember() {
 
 // --- OWNER RENEWAL & DELETE ---
 function openRenewModal(memberId) {
+  dismissMobileKeyboard();
   const member = State.members.find(m => String(m.Member_ID).trim() === String(memberId).trim());
   if (!member) return;
 
@@ -869,6 +907,7 @@ function openRenewModal(memberId) {
 }
 
 function closeRenewModal() {
+  dismissMobileKeyboard();
   document.getElementById("renew-modal")?.classList.add("hidden");
   document.getElementById("renew-form")?.reset();
   toggleCustomDaysInput("r-plan", "r-custom-days-group");
@@ -876,6 +915,8 @@ function closeRenewModal() {
 
 async function handleRenewSubmit(e) {
   e.preventDefault();
+  dismissMobileKeyboard();
+
   const btn = document.getElementById("btn-submit-renew");
   btn.disabled = true;
   showSpinner("Renewing membership plan...");
@@ -922,6 +963,7 @@ async function handleRenewSubmit(e) {
 }
 
 async function deleteMember(memberId, fullName) {
+  dismissMobileKeyboard();
   const confirmed = confirm(`Are you sure you want to delete ${fullName} (${memberId}) from the gym records? This cannot be undone.`);
   if (!confirmed) return;
 
@@ -936,7 +978,7 @@ async function deleteMember(memberId, fullName) {
     });
 
     showToast("Member successfully removed");
-    setTimeout(() => fetchData(true), 1200);
+    setTimeout(fetchData, 1200);
   } catch (err) {
     showToast("Failed to delete member", true);
   } finally {
