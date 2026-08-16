@@ -154,31 +154,31 @@
         </div>
       </div>
 
-     <!-- Compact Single-Row Stats Bar -->
-<div class="card compact-stats-bar mb-4">
-  <div class="stat-col">
-    <span class="stat-lbl">Active Members</span>
-    <span class="stat-num" id="stat-total">0</span>
-  </div>
-  <div class="stat-divider"></div>
-  <div class="stat-col">
-    <span class="stat-lbl">Expiring (&le; 7 Days)</span>
-    <span class="stat-num text-warning" id="stat-expiring">0</span>
-  </div>
-  <div class="stat-divider"></div>
-  <div class="stat-col">
-    <span class="stat-lbl">Expired</span>
-    <span class="stat-num text-danger" id="stat-expired">0</span>
-  </div>
-</div>
+          <!-- Compact Single-Row Stats Bar -->
+      <div class="card compact-stats-bar mb-4">
+        <div class="stat-col">
+          <span class="stat-lbl">Active Members</span>
+          <span class="stat-num" id="stat-total">0</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-col">
+          <span class="stat-lbl">Expiring (&le; 7 Days)</span>
+          <span class="stat-num text-warning" id="stat-expiring">0</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-col">
+          <span class="stat-lbl">Expired</span>
+          <span class="stat-num text-danger" id="stat-expired">0</span>
+        </div>
+      </div>
 
       <div class="card p-0 overflow-hidden">
-        <div class="tabs-nav">
-          <button class="tab-item active" id="btn-owner-all" onclick="setOwnerTab('all')">All Members</button>
-          <button class="tab-item" id="btn-owner-expiring" onclick="setOwnerTab('expiring')">Expiring Queue</button>
-          <button class="tab-item" id="btn-owner-dues" onclick="setOwnerTab('dues')">Pending Dues</button>
-          <button class="tab-item" id="btn-owner-add" onclick="setOwnerTab('add')">+ New Admission</button>
-        </div>
+      <div class="tabs-nav">
+        <button class="tab-item tab-plus" id="btn-owner-add" onclick="setOwnerTab('add')" title="New Admission">+</button>
+        <button class="tab-item active" id="btn-owner-all" onclick="setOwnerTab('all')">All Members</button>
+        <button class="tab-item" id="btn-owner-expiring" onclick="setOwnerTab('expiring')">Expiring Queue</button>
+        <button class="tab-item" id="btn-owner-dues" onclick="setOwnerTab('dues')">Pending Dues</button>
+      </div>
 
         <div id="owner-table-view" class="p-4">
           <input type="text" id="owner-search" class="search-input" placeholder="🔍 Search member by name, phone number, or ID..." />
