@@ -778,13 +778,13 @@ function renderOwner() {
     const safeName = String(m.Full_Name || "Unnamed").replace(/'/g, "\\'");
 
     // 6 Columns: 1. Status | 2. Member ID / Name | 3. Start Date | 4. Plan | 5. Total Due | 6. Actions
+    // Render clean, single-line table row (First 3 cells clickable)
     tr.innerHTML = `
       <td class="clickable-cell" onclick="inspectMemberCard('${m.Member_ID}')" title="Click to view member dashboard">
         <span class="badge ${badgeClass}">${statusText}</span>
       </td>
       <td class="clickable-cell" onclick="inspectMemberCard('${m.Member_ID}')" title="Click to view member dashboard">
         <strong>${m.Full_Name || "Unnamed"}</strong>
-        <div style="font-size: 10px; color: var(--text-muted); line-height: 1.1;">${m.Member_ID}</div>
       </td>
       <td class="clickable-cell" onclick="inspectMemberCard('${m.Member_ID}')" title="Click to view member dashboard">
         <span>${formatDate(m.Plan_Start_Date, false)}</span>
