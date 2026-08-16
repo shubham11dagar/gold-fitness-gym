@@ -1,5 +1,5 @@
 /* ==========================================================================
-   AURA GYM - COMPLETE MODERN RESPONSIVE STYLING
+   GOLD FITNESS GYM - COMPLETE MODERN RESPONSIVE STYLING
    ========================================================================== */
 
 :root {
@@ -701,3 +701,21 @@ input:focus, select:focus {
 }
 
 .hidden { display: none !important; }
+
+/* Subtle red highlight for rows with outstanding dues */
+.row-due-highlight {
+  background-color: rgba(244, 63, 94, 0.08) !important;
+}
+
+[data-theme="light"] .row-due-highlight {
+  background-color: rgba(225, 29, 72, 0.06) !important;
+}
+
+/* Maintain clean hover effect over highlighted rows */
+.row-due-highlight:hover {
+  background-color: rgba(244, 63, 94, 0.15) !important;
+}
+
+[data-theme="light"] .row-due-highlight:hover {
+  background-color: rgba(225, 29, 72, 0.12) !important;
+}
