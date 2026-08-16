@@ -154,20 +154,23 @@
         </div>
       </div>
 
-      <div class="grid grid-3 mb-6">
-        <div class="card kpi-card">
-          <span class="kpi-label">Total Active Members</span>
-          <span class="kpi-val" id="stat-total">0</span>
-        </div>
-        <div class="card kpi-card kpi-warning">
-          <span class="kpi-label">Expiring Soon (≤ 7 Days)</span>
-          <span class="kpi-val text-warning" id="stat-expiring">0</span>
-        </div>
-        <div class="card kpi-card kpi-danger">
-          <span class="kpi-label">Expired</span>
-          <span class="kpi-val text-danger" id="stat-expired">0</span>
-        </div>
-      </div>
+     <!-- Compact Single-Row Stats Bar -->
+<div class="card compact-stats-bar mb-4">
+  <div class="stat-col">
+    <span class="stat-lbl">Active Members</span>
+    <span class="stat-num" id="stat-total">0</span>
+  </div>
+  <div class="stat-divider"></div>
+  <div class="stat-col">
+    <span class="stat-lbl">Expiring (&le; 7 Days)</span>
+    <span class="stat-num text-warning" id="stat-expiring">0</span>
+  </div>
+  <div class="stat-divider"></div>
+  <div class="stat-col">
+    <span class="stat-lbl">Expired</span>
+    <span class="stat-num text-danger" id="stat-expired">0</span>
+  </div>
+</div>
 
       <div class="card p-0 overflow-hidden">
         <div class="tabs-nav">
@@ -329,7 +332,7 @@
   </div>
 
   <script src="app.js"></script>
-  
+
 <!-- Custom Confirmation Modal -->
 <div id="custom-alert-modal" class="modal-backdrop hidden">
   <div class="card modal-box" style="max-width: 380px; text-align: center; margin: auto;">
