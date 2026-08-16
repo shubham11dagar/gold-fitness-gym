@@ -605,50 +605,85 @@ function initDates() {
   }
 }
 
-function calcEndDate() {
-  const startStr = document.getElementById("f-start-date").value;
-  if (!startStr) return;
+function computeEndDate(startDateStr, planVal, customDaysVal) {
+  if (!startDateStr) return "";
+  
+  const parts = startDateStr.split("-");
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1; // 0-indexed month
+  const day = parseInt(parts[2], 10);
 
-  const planSelect = document.getElementById("f-plan");
-  let days = 30;
+  let targetDate;
 
-  if (planSelect.value === "Custom Plan") {
-    const customVal = parseInt(document.getElementById("f-custom-days").value, 10);
-    days = isNaN(customVal) || customVal < 1 ? 1 : customVal;
+  if (planVal === "1 Month Basic") {
+    // Add 1 month, then subtract 1 day
+    targetDate = new Date(year, month + 1, day - 1);
+  } else if (planVal === "3 Month Pro") {
+    // Add 3 months, then subtract 1 day
+    targetDate = new Date(year, month + 3, day - 1);
+  } else if (planVal === "6 Month Pro") {
+    // Add 6 months, then subtract 1 day
+    targetDate = new Date(year, month + 6, day - 1);
+  } else if (planVal === "1 Year VIP") {
+    // Add 1 full year, then subtract 1 day
+    targetDate = new Date(year + 1, month, day - 1);
+  } else if (planVal === "Custom Plan") {
+    const days = parseInt(customDaysVal, 10) || 1;
+    // Including start day: Start + (days - 1)
+    targetDate = new Date(year, month, day + (days - 1));
   } else {
-    days = parseInt(planSelect.options[planSelect.selectedIndex].getAttribute("data-days"), 10) || 30;
+    targetDate = new Date(year, month + 1, day - 1);
   }
 
-  const start = new Date(startStr);
-  const end = new Date(start.setDate(start.getDate() + days));
-  document.getElementById("f-end-date").value = end.toISOString().split("T")[0];
+  // Format as YYYY-MM-DD
+  const y = targetDate.getFullYear();
+  const m = String(targetDate.getMonth() + 1).padStart(2, "0");
+  const d = String(targetDate.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function calcEndDate() {
+  const startStr = document.getElementById("f-start-date").value;
+  const planSelect = document.getElementById("f-plan");
+  const customDays = document.getElementById("f-custom-days")?.value;
+  
+  const calculated = computeEndDate(startStr, planSelect.value, customDays);
+  if (calculated) {
+    document.getElementById("f-end-date").value = calculated;
+  }
 }
 
 function calcRenewEndDate() {
   const startStr = document.getElementById("r-start-date").value;
-  if (!startStr) return;
-
   const planSelect = document.getElementById("r-plan");
-  let days = 30;
+  const customDays = document.getElementById("r-custom-days")?.value;
 
-  if (planSelect.value === "Custom Plan") {
-    const customVal = parseInt(document.getElementById("r-custom-days").value, 10);
-    days = isNaN(customVal) || customVal < 1 ? 1 : customVal;
-  } else {
-    days = parseInt(planSelect.options[planSelect.selectedIndex].getAttribute("data-days"), 10) || 30;
+  const calculated = computeEndDate(startStr, planSelect.value, customDays);
+  if (calculated) {
+    document.getElementById("r-end-date").value = calculated;
   }
-
-  const start = new Date(startStr);
-  const end = new Date(start.setDate(start.getDate() + days));
-  document.getElementById("r-end-date").value = end.toISOString().split("T")[0];
 }
 
 function getDaysRemaining(endDateStr) {
   if (!endDateStr) return 0;
-  const target = new Date(endDateStr);
+  
+  // Parse YYYY-MM-DD in local time
+  const parts = String(endDateStr).split("T")[0].split("-");
+  if (parts.length < 3) return 0;
+
+  const target = new Date(parts[0], parts[1] - 1, parts[2]); // Midnight of end date
   const now = new Date();
-  now.setHours(0, 0, 0, 0);
-  return Math.ceil((target - now) / (1000 * 60 * 60 * 24));
+  now.setHours(0, 0, 0, 0); // Midnight of today
+
+  const diffMs = target.getTime() - now.getTime();
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+  // If today is on or before the end date, add 1 so today is counted as a valid day
+  if (diffDays >= 0) {
+    return diffDays + 1; 
+  } else {
+    return diffDays; // Returns negative days if expired (e.g. -1 for yesterday)
+  }
 }
 
 // --- REAL-TIME SYNC ---
