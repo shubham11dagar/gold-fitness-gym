@@ -702,20 +702,22 @@ input:focus, select:focus {
 
 .hidden { display: none !important; }
 
-/* Subtle red highlight for rows with outstanding dues */
+/* Darker, distinct red highlight for members with outstanding dues */
 .row-due-highlight {
-  background-color: rgba(244, 63, 94, 0.08) !important;
+  background-color: rgba(244, 63, 94, 0.2) !important;
+  border-left: 3px solid var(--rose-text);
 }
 
 [data-theme="light"] .row-due-highlight {
-  background-color: rgba(225, 29, 72, 0.06) !important;
+  background-color: rgba(225, 29, 72, 0.16) !important;
+  border-left: 3px solid #e11d48;
 }
 
-/* Maintain clean hover effect over highlighted rows */
+/* Hover state on highlighted rows */
 .row-due-highlight:hover {
-  background-color: rgba(244, 63, 94, 0.15) !important;
+  background-color: rgba(244, 63, 94, 0.28) !important;
 }
 
 [data-theme="light"] .row-due-highlight:hover {
-  background-color: rgba(225, 29, 72, 0.12) !important;
+  background-color: rgba(225, 29, 72, 0.24) !important;
 }
