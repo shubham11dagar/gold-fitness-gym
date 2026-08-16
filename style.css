@@ -253,6 +253,33 @@ body {
   }
 }
 
+/* Auth Layout & Mobile Viewport Clearance */
+#view-auth {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(100vh - 120px);
+  padding-bottom: 2rem;
+  transition: transform 0.3s ease;
+}
+
+@media (max-width: 640px) {
+  #view-auth {
+    justify-content: flex-start;
+    padding-top: 1.5rem;
+    padding-bottom: 18rem; /* Buffer to prevent UI hiding behind mobile keyboard */
+  }
+
+  #auth-owner-pane {
+    padding-bottom: 1rem;
+  }
+
+  #btn-login-owner {
+    margin-top: 1rem;
+    width: 100%;
+  }
+}
+
 /* Auth Toggle */
 .toggle-group {
   display: grid;
@@ -554,14 +581,30 @@ input:focus, select:focus {
   color: var(--text-muted);
 }
 
-/* Tabs Navigation */
-.tabs-nav {
-  display: flex;
+/* Horizontal Slider Navigation for Tabs */
+.tabs-nav,
+.tabs-container,
+.tabs {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
   border-bottom: 1px solid var(--border);
   background: var(--surface-alt);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-.tab-item {
+.tabs-nav::-webkit-scrollbar,
+.tabs-container::-webkit-scrollbar,
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-item,
+.tab-btn {
   background: transparent;
   border: none;
   color: var(--text-muted);
@@ -571,15 +614,18 @@ input:focus, select:focus {
   cursor: pointer;
   border-bottom: 2px solid transparent;
   transition: all 0.2s ease;
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
 }
 
-.tab-item.active {
+.tab-item.active,
+.tab-btn.active {
   color: var(--text-main);
   background: var(--surface);
   border-bottom-color: var(--primary);
 }
 
-/* Tables */
+/* Tables & Clickable Cells */
 .table-container {
   overflow-x: auto;
 }
@@ -606,13 +652,36 @@ input:focus, select:focus {
   border-bottom: 1px solid var(--border);
 }
 
-.clickable-row {
+/* Clickable cells: pointer only, zero background color shifts on click/hover */
+.clickable-cell {
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
-.clickable-row:hover {
-  background-color: var(--surface-alt) !important;
+.clickable-cell:hover,
+.clickable-cell:active,
+.clickable-cell:focus {
+  background-color: inherit !important;
+}
+
+/* Darker Due Row Highlight (All Members & Expiring Queue) */
+.row-due-highlight {
+  background-color: rgba(244, 63, 94, 0.2) !important;
+  border-left: 3px solid var(--rose-text);
+}
+
+[data-theme="light"] .row-due-highlight {
+  background-color: rgba(225, 29, 72, 0.16) !important;
+  border-left: 3px solid #e11d48;
+}
+
+.row-due-highlight:hover {
+  background-color: rgba(244, 63, 94, 0.28) !important;
+}
+
+[data-theme="light"] .row-due-highlight:hover {
+  background-color: rgba(225, 29, 72, 0.24) !important;
 }
 
 .text-right { text-align: right; }
@@ -679,20 +748,22 @@ input:focus, select:focus {
   to { transform: rotate(360deg); }
 }
 
+/* Toast Notification (Top Viewport Placement) */
 #toast {
   position: fixed;
-  top: 1.5rem;          /* Moved from bottom to the top */
+  top: 1.5rem;
+  bottom: auto;
   left: 50%;
   transform: translateX(-50%);
   background: var(--surface);
-  color: var(--text);
+  color: var(--text-main);
   padding: 0.85rem 1.4rem;
   border-radius: 12px;
   border: 1px solid var(--border);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   font-size: 0.875rem;
   font-weight: 600;
-  z-index: 99999;       /* Keeps it on top of all elements and inputs */
+  z-index: 999999;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -703,7 +774,7 @@ input:focus, select:focus {
 
 #toast.hidden {
   opacity: 0;
-  transform: translate(-50%, -20px);  /* Slides out smoothly to the top */
+  transform: translate(-50%, -20px);
   pointer-events: none;
 }
 
@@ -713,97 +784,3 @@ input:focus, select:focus {
 }
 
 .hidden { display: none !important; }
-
-/* Darker, distinct red highlight for members with outstanding dues */
-.row-due-highlight {
-  background-color: rgba(244, 63, 94, 0.2) !important;
-  border-left: 3px solid var(--rose-text);
-}
-
-[data-theme="light"] .row-due-highlight {
-  background-color: rgba(225, 29, 72, 0.16) !important;
-  border-left: 3px solid #e11d48;
-}
-
-/* Hover state on highlighted rows */
-.row-due-highlight:hover {
-  background-color: rgba(244, 63, 94, 0.28) !important;
-}
-
-[data-theme="light"] .row-due-highlight:hover {
-  background-color: rgba(225, 29, 72, 0.24) !important;
-}
-
-/* Ensure auth view has comfortable mobile scroll clearance */
-#view-auth {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: calc(100vh - 120px);
-  padding-bottom: 2rem;
-  transition: transform 0.3s ease;
-}
-
-@media (max-width: 640px) {
-  #view-auth {
-    justify-content: flex-start;
-    padding-top: 1.5rem;
-    padding-bottom: 18rem; /* Extra buffer space so the button can scroll well above the keyboard */
-  }
-
-  #auth-owner-pane {
-    padding-bottom: 1rem;
-  }
-
-  #btn-login-owner {
-    margin-top: 1rem;
-    width: 100%;
-  }
-}
-
-/* Clickable cells: pointer cursor only, no background color changes */
-.clickable-cell {
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent; /* Prevents mobile tap flash/blue box */
-  user-select: none;
-}
-
-/* Ensure hover and active states do not alter the background color */
-.clickable-cell:hover,
-.clickable-cell:active,
-.clickable-cell:focus {
-  background-color: inherit !important;
-}
-
-/* Horizontal scroll slider for Dashboard Tabs */
-.tabs, 
-.tab-navigation, 
-.nav-tabs {
-  display: flex !important;
-  flex-wrap: nowrap !important;          /* Prevents buttons from wrapping or clipping */
-  overflow-x: auto !important;           /* Enables horizontal sliding */
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;     /* Smooth momentum scrolling on iOS/Android */
-  scroll-snap-type: x mandatory;         /* Snaps neatly to each tab item */
-  gap: 0.5rem;
-  padding: 0.25rem 0.5rem 0.5rem 0.5rem;
-  scrollbar-width: none;                 /* Hides scrollbar on Firefox */
-}
-
-/* Hide native scrollbars on Chrome, Safari, and Edge */
-.tabs::-webkit-scrollbar,
-.tab-navigation::-webkit-scrollbar,
-.nav-tabs::-webkit-scrollbar {
-  display: none;
-}
-
-/* Ensure tab buttons maintain their full natural width without shrinking */
-.tabs button,
-.tabs .tab-btn,
-.tab-navigation button,
-.nav-tabs button {
-  flex: 0 0 auto !important;             /* Stops the button text from being squished */
-  white-space: nowrap !important;        /* Keeps labels like '+ New Admission' on a single line */
-  scroll-snap-align: start;
-  padding: 0.6rem 1rem;
-}
