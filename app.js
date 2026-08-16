@@ -360,7 +360,7 @@ function setupTheme() {
       State.theme = next;
       localStorage.setItem("gym_theme", next);
       document.documentElement.setAttribute("data-theme", next);
-      showToast(`Switched to ${next} theme`);
+      // showToast removed here for seamless instant theme switching
     });
   }
 }
