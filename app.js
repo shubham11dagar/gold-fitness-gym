@@ -4,17 +4,15 @@
    - Custom Plan Support: Full manual day input (e.g. 1, 20, 45 days)
    - Original Classic Theme Toggle: Restored with '🌓'
    - Full Admission Performa: Plan, Start/End Dates, Dues, Paid, Notes
-   - Optional Phone: Defaults to unique Member ID if phone is omitted
-   - Dual-Mode Member Card: Allows Owner to inspect full card with "← Back to Hub"
-   - Date Format: D Mon YYYY (e.g. 2 Jul 2026)
-   - Table Display: Plan Start Date column enabled for quick ledger tracking
+   - Merged Phone / Member ID: Phone number is stored as primary Member_ID
+   - Dual-Mode Member Card: Allows Owner to inspect full card with "← Back"
+   - Date Format: D Mon YYYY (e.g. 16 Aug 2026)
    - Owner Security: PIN verified in Google Sheets 'Admin' tab with progressive lockout
    - Persistent Sessions: 15-day sliding inactivity auto-login for Owner & Members
-   - Single-Pass Loading: Zero redundant spinners on login
+   - Custom Promise Alert: Universal deletion confirmation modal for Mobile & PC
    ========================================================================== */
 
 const CONFIG = {
-  // Replace with your Google Apps Script Web App Deployment URL
   apiUrl: "https://script.google.com/macros/s/AKfycbzPl-XV9RlJU4XVEa5HaTOsK_aPaMp3QSf449ir-MDHjW1svy_H3iHERKTi6sgbBYrINA/exec",
   pollInterval: 8000
 };
@@ -289,23 +287,13 @@ function resetAuthTabsToMember() {
   }
 }
 
-// --- DATE FORMATTER UTILITY (D Mon YYYY, e.g. 2 Jul 2026) ---
+// --- DATE FORMATTER UTILITY ---
 function formatDate(dateInput) {
   if (!dateInput) return "--";
   const d = new Date(dateInput);
   if (isNaN(d.getTime())) return "--";
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
-}
-
-// --- PRIVACY PHONE MASKING ---
-function maskPhoneNumber(phoneStr) {
-  if (!phoneStr) return "Not Provided";
-  const clean = String(phoneStr).trim();
-  if (clean.startsWith("MEM-") || clean.toLowerCase() === "not provided") {
-    return `<span class="badge" style="background:var(--surface-alt); font-size:10px;">ANONYMOUS</span>`;
-  }
-  return clean.length < 4 ? clean : clean.slice(0, -3) + "***";
 }
 
 // --- SPINNER & TOAST UTILITIES ---
@@ -328,6 +316,32 @@ function showToast(msg, isError = false) {
   toast.style.borderColor = isError ? "var(--rose)" : "var(--emerald)";
   toast.classList.remove("hidden");
   setTimeout(() => toast.classList.add("hidden"), 3500);
+}
+
+// --- CUSTOM ALERT / CONFIRM MODAL (Universal Phone & PC) ---
+function showCustomConfirm(message) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById("custom-alert-modal");
+    const msgEl = document.getElementById("custom-alert-msg");
+    const confirmBtn = document.getElementById("custom-alert-confirm");
+    const cancelBtn = document.getElementById("custom-alert-cancel");
+
+    msgEl.innerText = message;
+    modal.classList.remove("hidden");
+
+    function cleanup(result) {
+      modal.classList.add("hidden");
+      confirmBtn.removeEventListener("click", onConfirm);
+      cancelBtn.removeEventListener("click", onCancel);
+      resolve(result);
+    }
+
+    function onConfirm() { cleanup(true); }
+    function onCancel() { cleanup(false); }
+
+    confirmBtn.addEventListener("click", onConfirm);
+    cancelBtn.addEventListener("click", onCancel);
+  });
 }
 
 // --- THEME ENGINE ---
@@ -389,20 +403,16 @@ function setOwnerTab(tab) {
   }
 }
 
-// --- EVENT BINDINGS & MOBILE KEYBOARD LISTENERS ---
+// --- EVENT BINDINGS & LISTENERS ---
 function setupEvents() {
   const tabMember = document.getElementById("tab-member");
   const tabOwner = document.getElementById("tab-owner");
   const paneMember = document.getElementById("auth-member-pane");
   const paneOwner = document.getElementById("auth-owner-pane");
 
-  // Lift Owner PIN card when mobile keyboard pops up
   const pinInput = document.getElementById("input-owner-pin");
-  const authCard = document.querySelector("#view-auth .card") || document.getElementById("auth-owner-pane");
-
   if (pinInput) {
     pinInput.addEventListener("focus", () => {
-      // Small timeout ensures the mobile keyboard has begun opening before scrolling
       setTimeout(() => {
         const unlockBtn = document.getElementById("btn-login-owner");
         if (unlockBtn) {
@@ -533,7 +543,7 @@ async function handleOwnerPinLogin() {
       switchView("owner", true);
     } else {
       hideSpinner();
-      dismissMobileKeyboard(); // Instantly closes keyboard so the warning is fully unobstructed
+      dismissMobileKeyboard();
       recordFailedOwnerAttempt();
       const currentFailures = getLockoutData().failedAttempts;
       if (currentFailures < LOCKOUT_CONFIG.maxFreeAttempts) {
@@ -558,7 +568,6 @@ async function handleMemberLogin() {
   hideSpinner();
 
   const member = State.members.find(m => 
-    String(m.Phone_Number).trim().toLowerCase() === inputVal.toLowerCase() ||
     String(m.Member_ID).trim().toLowerCase() === inputVal.toLowerCase()
   );
 
@@ -672,7 +681,7 @@ async function fetchData(silent = false) {
   }
 }
 
-// --- OWNER DASHBOARD (WITH TAB-SPECIFIC DUE HIGHLIGHTING) ---
+// --- OWNER DASHBOARD (6-COLUMN LAYOUT WITH DUE HIGHLIGHTING) ---
 function renderOwner() {
   const tbody = document.getElementById("owner-member-rows");
   const query = (document.getElementById("owner-search")?.value || "").trim().toLowerCase();
@@ -703,19 +712,18 @@ function renderOwner() {
     list = list.filter(m => Number(m.Total_Due_Amount || 0) > 0);
   }
 
-  // Search Filter
+  // Search Filter (Name or Member ID / Phone)
   list = list.filter(m => {
     const nameMatch = String(m.Full_Name || "").toLowerCase().includes(query);
     const idMatch = String(m.Member_ID || "").toLowerCase().includes(query);
-    const phoneMatch = String(m.Phone_Number || "").trim().toLowerCase().startsWith(query);
-    return nameMatch || idMatch || phoneMatch;
+    return nameMatch || idMatch;
   });
 
   if (!tbody) return;
   tbody.innerHTML = "";
 
   if (list.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align: left; padding: 20px 16px; color: var(--text-muted);">No records found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: left; padding: 20px 16px; color: var(--text-muted);">No records found.</td></tr>`;
     return;
   }
 
@@ -740,26 +748,24 @@ function renderOwner() {
     const shouldHighlight = (State.ownerTab === "all" || State.ownerTab === "expiring") && dueAmount > 0;
     tr.className = shouldHighlight ? "row-due-highlight" : "";
 
-    // Safe escaped name for inline onclick
     const safeName = String(m.Full_Name || "Unnamed").replace(/'/g, "\\'");
 
-    // Render cells (First 3 cells have onclick="inspectMemberCard(...)")
+    // 6 Columns: 1. Status | 2. Member ID / Name | 3. Start Date | 4. Plan | 5. Total Due | 6. Actions
     tr.innerHTML = `
       <td class="clickable-cell" onclick="inspectMemberCard('${m.Member_ID}')" title="Click to view member dashboard">
         <span class="badge ${badgeClass}">${statusText}</span>
       </td>
       <td class="clickable-cell" onclick="inspectMemberCard('${m.Member_ID}')" title="Click to view member dashboard">
         <strong>${m.Full_Name || "Unnamed"}</strong>
-        <div style="font-size: 10px; color: var(--text-muted);">${m.Member_ID}</div>
+        <div style="font-size: 11px; color: var(--text-muted);">${m.Member_ID}</div>
       </td>
       <td class="clickable-cell" onclick="inspectMemberCard('${m.Member_ID}')" title="Click to view member dashboard">
-        <strong>${formatDate(m.Plan_Start_Date || m["Plan Start Date"])}</strong>
+        <strong>${formatDate(m.Plan_Start_Date)}</strong>
       </td>
-      <td><span class="badge" style="background: var(--surface-alt);">${m["Plan Name"] || m.Plan_Name || "Standard"}</span></td>
+     <td><strong style="color: var(--text-main); font-size: 13px;">${m.Plan_Name || "Standard"}</strong></td>
       <td class="${dueAmount > 0 ? 'text-warning font-bold' : 'text-subtle'}">
         ₹${dueAmount.toLocaleString()}
       </td>
-      <td><strong>${maskPhoneNumber(m.Phone_Number)}</strong></td>
       <td class="text-right">
         <div class="action-cluster" onclick="event.stopPropagation()">
           <button type="button" class="btn-renew" onclick="openRenewModal('${m.Member_ID}')">Renew</button>
@@ -770,6 +776,7 @@ function renderOwner() {
     tbody.appendChild(tr);
   });
 }
+
 // --- ADMISSION SUBMISSION ---
 async function handleAdmission(e) {
   e.preventDefault();
@@ -779,7 +786,7 @@ async function handleAdmission(e) {
   btn.disabled = true;
   showSpinner("Recording admission to Google Sheets...");
 
-  const phoneVal = document.getElementById("f-phone").value.trim();
+  const phoneOrId = document.getElementById("f-phone").value.trim();
   const planSelect = document.getElementById("f-plan");
   let chosenPlanName = planSelect.value;
 
@@ -791,7 +798,7 @@ async function handleAdmission(e) {
   const payload = {
     action: "addMember",
     fullName: document.getElementById("f-name").value.trim(),
-    phoneNumber: phoneVal,
+    memberId: phoneOrId,
     planName: chosenPlanName,
     startDate: document.getElementById("f-start-date").value,
     endDate: document.getElementById("f-end-date").value,
@@ -810,33 +817,28 @@ async function handleAdmission(e) {
     const result = await res.json();
 
     if (result.status === "success") {
-      const idNotice = phoneVal ? "" : ` (Assigned ID: ${result.memberId})`;
+      const idNotice = phoneOrId ? "" : ` (Assigned ID: ${result.memberId})`;
       showToast(`Member successfully saved!${idNotice}`);
       document.getElementById("admission-form").reset();
       toggleCustomDaysInput("f-plan", "f-custom-days-group");
       initDates();
       setOwnerTab("all");
-      fetchData(true);
+      await fetchData(true);
     } else {
-      showToast("Error saving member", true);
+      showToast(result.message || "Error saving member", true);
     }
   } catch (err) {
-    showToast("Member successfully saved!");
-    document.getElementById("admission-form").reset();
-    toggleCustomDaysInput("f-plan", "f-custom-days-group");
-    initDates();
-    setOwnerTab("all");
-    setTimeout(() => fetchData(true), 1200);
+    console.error("Add Member Error:", err);
+    showToast("Error adding member. Please check connection.", true);
   } finally {
     btn.disabled = false;
     hideSpinner();
   }
 }
 
-// --- RENDER MEMBER DASHBOARD (REORDERED TRANSACTIONS TABLE) ---
+// --- RENDER MEMBER DASHBOARD ---
 function renderMember() {
   const member = State.members.find(m => 
-    String(m.Phone_Number).trim().toLowerCase() === String(State.activeIdentifier).trim().toLowerCase() ||
     String(m.Member_ID).trim().toLowerCase() === String(State.activeIdentifier).trim().toLowerCase()
   );
   if (!member) return;
@@ -855,18 +857,16 @@ function renderMember() {
   const days = getDaysRemaining(member.Plan_End_Date);
   const dues = Number(member.Total_Due_Amount || 0);
 
-  const displayPhone = String(member.Phone_Number).startsWith("MEM-") ? "Anonymous Access" : member.Phone_Number;
-
   document.getElementById("m-member-name").innerText = member.Full_Name;
-  document.getElementById("m-member-sub").innerText = `ID: ${member.Member_ID} • ${displayPhone}`;
-  document.getElementById("m-plan-badge").innerText = member["Plan Name"] || member.Plan_Name || "Membership";
+  document.getElementById("m-member-sub").innerText = `Member ID: ${member.Member_ID}`;
+  document.getElementById("m-plan-badge").innerText = member.Plan_Name || "Membership";
   document.getElementById("m-days-number").innerText = Math.max(0, days);
   
   document.getElementById("m-start-date").innerText = formatDate(member.Plan_Start_Date);
   document.getElementById("m-end-date").innerText = formatDate(member.Plan_End_Date);
   document.getElementById("m-due-amount").innerText = dues.toLocaleString();
 
-  const planName = String(member["Plan Name"] || member.Plan_Name || "");
+  const planName = String(member.Plan_Name || "");
   let totalDays = 30;
 
   if (planName.includes("3 Month")) totalDays = 90;
@@ -893,10 +893,7 @@ function renderMember() {
   }
 
   const userTxns = State.transactions
-    .filter(t => 
-      (t.Member_ID && String(t.Member_ID).trim() === String(member.Member_ID).trim()) || 
-      (t.Phone_Number && String(t.Phone_Number).trim() === String(member.Phone_Number).trim())
-    )
+    .filter(t => String(t.Member_ID).trim() === String(member.Member_ID).trim())
     .reverse();
 
   const txnBody = document.getElementById("m-transaction-rows");
@@ -906,13 +903,12 @@ function renderMember() {
   if (userTxns.length === 0) {
     txnBody.innerHTML = `<tr><td colspan="4" style="text-align: left; padding: 16px; color: var(--text-muted);">No payment records.</td></tr>`;
   } else {
-    // 1. Date | 2. Amount Paid | 3. Payment Mode | 4. Notes / Purpose
     userTxns.forEach(t => {
       txnBody.innerHTML += `
         <tr>
           <td><strong>${formatDate(t.Date)}</strong></td>
-          <td><strong>₹${Number(t["Amount Paid"] || t.Amount_Paid || 0).toLocaleString()}</strong></td>
-          <td><span class="badge" style="background: var(--surface-alt);">${t["Payment Mode"] || t.Payment_Mode || "Cash"}</span></td>
+          <td><strong>₹${Number(t.Amount_Paid || 0).toLocaleString()}</strong></td>
+          <td><span class="badge" style="background: var(--surface-alt);">${t.Payment_Mode || "Cash"}</span></td>
           <td>${t.Notes || "Payment"}</td>
         </tr>
       `;
@@ -928,7 +924,6 @@ function openRenewModal(memberId) {
 
   document.getElementById("r-member-id").value = member.Member_ID;
   document.getElementById("r-full-name").value = member.Full_Name;
-  document.getElementById("r-phone").value = member.Phone_Number;
   document.getElementById("renew-sub-title").innerText = `${member.Full_Name} (${member.Member_ID})`;
 
   const today = new Date().toISOString().split("T")[0];
@@ -944,31 +939,6 @@ function closeRenewModal() {
   document.getElementById("renew-modal")?.classList.add("hidden");
   document.getElementById("renew-form")?.reset();
   toggleCustomDaysInput("r-plan", "r-custom-days-group");
-}
-
-function showCustomConfirm(message) {
-  return new Promise((resolve) => {
-    const modal = document.getElementById("custom-alert-modal");
-    const msgEl = document.getElementById("custom-alert-msg");
-    const confirmBtn = document.getElementById("custom-alert-confirm");
-    const cancelBtn = document.getElementById("custom-alert-cancel");
-
-    msgEl.innerText = message;
-    modal.classList.remove("hidden");
-
-    function cleanup(result) {
-      modal.classList.add("hidden");
-      confirmBtn.removeEventListener("click", onConfirm);
-      cancelBtn.removeEventListener("click", onCancel);
-      resolve(result);
-    }
-
-    function onConfirm() { cleanup(true); }
-    function onCancel() { cleanup(false); }
-
-    confirmBtn.addEventListener("click", onConfirm);
-    cancelBtn.addEventListener("click", onCancel);
-  });
 }
 
 async function handleRenewSubmit(e) {
@@ -991,7 +961,6 @@ async function handleRenewSubmit(e) {
     action: "renewMember",
     memberId: document.getElementById("r-member-id").value,
     fullName: document.getElementById("r-full-name").value,
-    phoneNumber: document.getElementById("r-phone").value,
     planName: chosenPlanName,
     startDate: document.getElementById("r-start-date").value,
     endDate: document.getElementById("r-end-date").value,
@@ -1002,18 +971,23 @@ async function handleRenewSubmit(e) {
   };
 
   try {
-    await fetch(CONFIG.apiUrl, {
+    const res = await fetch(CONFIG.apiUrl, {
       method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "text/plain" },
       body: JSON.stringify(payload)
     });
+    const result = await res.json();
 
-    showToast("Membership renewed and activated!");
-    closeRenewModal();
-    setTimeout(() => fetchData(true), 1200);
+    if (result.status === "success") {
+      showToast("Membership renewed and activated!");
+      closeRenewModal();
+      await fetchData(true);
+    } else {
+      showToast(result.message || "Error processing renewal", true);
+    }
   } catch (err) {
-    showToast("Error processing renewal", true);
+    console.error("Renewal Error:", err);
+    showToast("Error processing renewal. Please check network.", true);
   } finally {
     btn.disabled = false;
     hideSpinner();
@@ -1021,7 +995,6 @@ async function handleRenewSubmit(e) {
 }
 
 async function deleteMember(memberId, fullName) {
-  // Call the custom dialog instead of window.confirm
   const confirmed = await showCustomConfirm(`Are you sure you want to delete ${fullName} (ID: ${memberId}) from gym records?`);
   if (!confirmed) return;
 
