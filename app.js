@@ -288,12 +288,14 @@ function resetAuthTabsToMember() {
 }
 
 // --- DATE FORMATTER UTILITY ---
-function formatDate(dateInput) {
+function formatDate(dateInput, includeYear = true) {
   if (!dateInput) return "--";
   const d = new Date(dateInput);
   if (isNaN(d.getTime())) return "--";
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  const day = d.getDate();
+  const month = months[d.getMonth()];
+  return includeYear ? `${day} ${month} ${d.getFullYear()}` : `${day} ${month}`;
 }
 
 // --- SPINNER & TOAST UTILITIES ---
@@ -785,7 +787,7 @@ function renderOwner() {
         <div style="font-size: 10px; color: var(--text-muted); line-height: 1.1;">${m.Member_ID}</div>
       </td>
       <td class="clickable-cell" onclick="inspectMemberCard('${m.Member_ID}')" title="Click to view member dashboard">
-        <span>${formatDate(m.Plan_Start_Date)}</span>
+        <span>${formatDate(m.Plan_Start_Date, false)}</span>
       </td>
       <td>
         <span style="color: var(--text-main); font-weight: 500;">${m.Plan_Name || "Standard"}</span>
