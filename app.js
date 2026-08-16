@@ -610,32 +610,26 @@ function computeEndDate(startDateStr, planVal, customDaysVal) {
   
   const parts = startDateStr.split("-");
   const year = parseInt(parts[0], 10);
-  const month = parseInt(parts[1], 10) - 1; // 0-indexed month
+  const month = parseInt(parts[1], 10) - 1;
   const day = parseInt(parts[2], 10);
 
   let targetDate;
 
   if (planVal === "1 Month Basic") {
-    // Add 1 month, then subtract 1 day
     targetDate = new Date(year, month + 1, day - 1);
   } else if (planVal === "3 Month Pro") {
-    // Add 3 months, then subtract 1 day
     targetDate = new Date(year, month + 3, day - 1);
   } else if (planVal === "6 Month Pro") {
-    // Add 6 months, then subtract 1 day
     targetDate = new Date(year, month + 6, day - 1);
   } else if (planVal === "1 Year VIP") {
-    // Add 1 full year, then subtract 1 day
     targetDate = new Date(year + 1, month, day - 1);
   } else if (planVal === "Custom Plan") {
     const days = parseInt(customDaysVal, 10) || 1;
-    // Including start day: Start + (days - 1)
     targetDate = new Date(year, month, day + (days - 1));
   } else {
     targetDate = new Date(year, month + 1, day - 1);
   }
 
-  // Format as YYYY-MM-DD
   const y = targetDate.getFullYear();
   const m = String(targetDate.getMonth() + 1).padStart(2, "0");
   const d = String(targetDate.getDate()).padStart(2, "0");
@@ -667,22 +661,20 @@ function calcRenewEndDate() {
 function getDaysRemaining(endDateStr) {
   if (!endDateStr) return 0;
   
-  // Parse YYYY-MM-DD in local time
   const parts = String(endDateStr).split("T")[0].split("-");
   if (parts.length < 3) return 0;
 
-  const target = new Date(parts[0], parts[1] - 1, parts[2]); // Midnight of end date
+  const target = new Date(parts[0], parts[1] - 1, parts[2]);
   const now = new Date();
-  now.setHours(0, 0, 0, 0); // Midnight of today
+  now.setHours(0, 0, 0, 0);
 
   const diffMs = target.getTime() - now.getTime();
   const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
 
-  // If today is on or before the end date, add 1 so today is counted as a valid day
   if (diffDays >= 0) {
     return diffDays + 1; 
   } else {
-    return diffDays; // Returns negative days if expired (e.g. -1 for yesterday)
+    return diffDays;
   }
 }
 
@@ -716,7 +708,7 @@ async function fetchData(silent = false) {
   }
 }
 
-// --- OWNER DASHBOARD (6-COLUMN LAYOUT WITH DUE HIGHLIGHTING) ---
+// --- OWNER DASHBOARD (6-COLUMN LAYOUT) ---
 function renderOwner() {
   const tbody = document.getElementById("owner-member-rows");
   const query = (document.getElementById("owner-search")?.value || "").trim().toLowerCase();
@@ -758,7 +750,7 @@ function renderOwner() {
   tbody.innerHTML = "";
 
   if (list.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align: left; padding: 20px 16px; color: var(--text-muted);">No records found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: left; padding: 16px 10px; color: var(--text-muted);">No records found.</td></tr>`;
     return;
   }
 
@@ -778,8 +770,6 @@ function renderOwner() {
     }
 
     const tr = document.createElement("tr");
-
-    // Only highlight in 'all' and 'expiring' tabs if there is a due balance
     const shouldHighlight = (State.ownerTab === "all" || State.ownerTab === "expiring") && dueAmount > 0;
     tr.className = shouldHighlight ? "row-due-highlight" : "";
 
@@ -792,12 +782,14 @@ function renderOwner() {
       </td>
       <td class="clickable-cell" onclick="inspectMemberCard('${m.Member_ID}')" title="Click to view member dashboard">
         <strong>${m.Full_Name || "Unnamed"}</strong>
-        <div style="font-size: 11px; color: var(--text-muted);">${m.Member_ID}</div>
+        <div style="font-size: 10px; color: var(--text-muted); line-height: 1.1;">${m.Member_ID}</div>
       </td>
       <td class="clickable-cell" onclick="inspectMemberCard('${m.Member_ID}')" title="Click to view member dashboard">
-        <strong>${formatDate(m.Plan_Start_Date)}</strong>
+        <span>${formatDate(m.Plan_Start_Date)}</span>
       </td>
-     <td><strong style="color: var(--text-main); font-size: 13px;">${m.Plan_Name || "Standard"}</strong></td>
+      <td>
+        <span style="color: var(--text-main); font-weight: 500;">${m.Plan_Name || "Standard"}</span>
+      </td>
       <td class="${dueAmount > 0 ? 'text-warning font-bold' : 'text-subtle'}">
         ₹${dueAmount.toLocaleString()}
       </td>
@@ -936,14 +928,14 @@ function renderMember() {
   txnBody.innerHTML = "";
 
   if (userTxns.length === 0) {
-    txnBody.innerHTML = `<tr><td colspan="4" style="text-align: left; padding: 16px; color: var(--text-muted);">No payment records.</td></tr>`;
+    txnBody.innerHTML = `<tr><td colspan="4" style="text-align: left; padding: 14px 10px; color: var(--text-muted);">No payment records.</td></tr>`;
   } else {
     userTxns.forEach(t => {
       txnBody.innerHTML += `
         <tr>
           <td><strong>${formatDate(t.Date)}</strong></td>
           <td><strong>₹${Number(t.Amount_Paid || 0).toLocaleString()}</strong></td>
-          <td><span class="badge" style="background: var(--surface-alt);">${t.Payment_Mode || "Cash"}</span></td>
+          <td><span class="badge" style="color: var(--text-main); font-weight: 600;">${t.Payment_Mode || "Cash"}</span></td>
           <td>${t.Notes || "Payment"}</td>
         </tr>
       `;
