@@ -774,3 +774,36 @@ input:focus, select:focus {
 .clickable-cell:focus {
   background-color: inherit !important;
 }
+
+/* Horizontal scroll slider for Dashboard Tabs */
+.tabs, 
+.tab-navigation, 
+.nav-tabs {
+  display: flex !important;
+  flex-wrap: nowrap !important;          /* Prevents buttons from wrapping or clipping */
+  overflow-x: auto !important;           /* Enables horizontal sliding */
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;     /* Smooth momentum scrolling on iOS/Android */
+  scroll-snap-type: x mandatory;         /* Snaps neatly to each tab item */
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem 0.5rem 0.5rem;
+  scrollbar-width: none;                 /* Hides scrollbar on Firefox */
+}
+
+/* Hide native scrollbars on Chrome, Safari, and Edge */
+.tabs::-webkit-scrollbar,
+.tab-navigation::-webkit-scrollbar,
+.nav-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ensure tab buttons maintain their full natural width without shrinking */
+.tabs button,
+.tabs .tab-btn,
+.tab-navigation button,
+.nav-tabs button {
+  flex: 0 0 auto !important;             /* Stops the button text from being squished */
+  white-space: nowrap !important;        /* Keeps labels like '+ New Admission' on a single line */
+  scroll-snap-align: start;
+  padding: 0.6rem 1rem;
+}
