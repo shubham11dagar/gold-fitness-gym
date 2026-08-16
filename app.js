@@ -715,7 +715,7 @@ function renderOwner() {
   tbody.innerHTML = "";
 
   if (list.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 24px; color: var(--text-muted);">No records found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align: left; padding: 20px 16px; color: var(--text-muted);">No records found.</td></tr>`;
     return;
   }
 
@@ -904,7 +904,7 @@ function renderMember() {
   txnBody.innerHTML = "";
 
   if (userTxns.length === 0) {
-    txnBody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 16px; color: var(--text-muted);">No payment records.</td></tr>`;
+    txnBody.innerHTML = `<tr><td colspan="4" style="text-align: left; padding: 16px; color: var(--text-muted);">No payment records.</td></tr>`;
   } else {
     // 1. Date | 2. Amount Paid | 3. Payment Mode | 4. Notes / Purpose
     userTxns.forEach(t => {
