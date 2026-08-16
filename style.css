@@ -267,7 +267,7 @@ body {
   #view-auth {
     justify-content: flex-start;
     padding-top: 1.5rem;
-    padding-bottom: 18rem; /* Buffer to prevent UI hiding behind mobile keyboard */
+    padding-bottom: 18rem;
   }
 
   #auth-owner-pane {
@@ -435,33 +435,27 @@ input:focus, select:focus {
   cursor: pointer;
 }
 
-/* Badges & Pills */
+/* Badges & Status - Clean Text Only (No Backgrounds / Borders) */
 .badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 8px;
-  border-radius: var(--radius-full);
-  font-size: 11px;
+  display: inline-block;
+  padding: 0;
+  border-radius: 0;
+  font-size: 13px;
   font-weight: 700;
-  border: 1px solid transparent;
+  background: transparent !important;
+  border: none !important;
 }
 
 .badge-emerald {
-  background: var(--emerald);
-  color: var(--emerald-text);
-  border-color: var(--emerald-border);
+  color: var(--emerald-text) !important;
 }
 
 .badge-amber {
-  background: var(--amber);
-  color: var(--amber-text);
-  border-color: var(--amber-border);
+  color: var(--amber-text) !important;
 }
 
 .badge-rose {
-  background: var(--rose);
-  color: var(--rose-text);
-  border-color: var(--rose-border);
+  color: var(--rose-text) !important;
 }
 
 .status-pill {
