@@ -513,6 +513,7 @@ async function handleOwnerPinLogin() {
       switchView("owner", true);
     } else {
       hideSpinner();
+      dismissMobileKeyboard(); // Instantly closes keyboard so the warning is fully unobstructed
       recordFailedOwnerAttempt();
       const currentFailures = getLockoutData().failedAttempts;
       if (currentFailures < LOCKOUT_CONFIG.maxFreeAttempts) {
