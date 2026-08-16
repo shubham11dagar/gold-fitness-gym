@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Aura Gym Portal</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Loading Overlay -->
+  <div id="loading-spinner" class="spinner-overlay hidden">
+    <div class="spinner-container">
+      <div class="spinner"></div>
+      <span class="spinner-text" id="spinner-text">Syncing with Google Sheets...</span>
+    </div>
+  </div>
+
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-badge">⚡</span>
+        <div>
+          <span class="brand-name">AURA GYM</span>
+          <span class="brand-tag">MANAGEMENT SUITE</span>
+        </div>
+      </div>
+      <div class="header-controls">
+        <div id="sync-pill" class="sync-pill hidden">
+          <span class="pulse"></span>
+          <span>LIVE</span>
+        </div>
+        <button id="theme-btn" class="icon-button" aria-label="Toggle Theme">🌓</button>
+      </div>
+    </header>
+
+    <!-- 1. Authentication View -->
+    <main id="view-auth" class="panel active">
+      <div class="card auth-card">
+        <h2>Dashboard Access</h2>
+        <p class="text-subtle">Select your access mode to view and manage gym records</p>
+        
+        <div class="toggle-group">
+          <button id="tab-member" class="toggle-btn active">Gym Member</button>
+          <button id="tab-owner" class="toggle-btn">Gym Owner</button>
+        </div>
+
+        <!-- Member Login Pane -->
+        <div id="auth-member-pane">
+          <div class="field-group">
+            <label for="input-member-phone">Registered Phone Number or Member ID</label>
+            <input type="text" id="input-member-phone" placeholder="e.g. 9876543210 or MEM-1234" maxlength="20" />
+          </div>
+          <button class="btn btn-primary" id="btn-login-member">View Membership Card</button>
+        </div>
+
+        <!-- Owner PIN Gate Pane -->
+        <div id="auth-owner-pane" class="hidden">
+          <p class="info-note">Enter master PIN to access member records and owner controls.</p>
+          
+          <div id="owner-lockout-banner" class="status-pill status-expired mb-4 hidden" style="text-align: center;">
+            🔒 <span id="owner-lockout-text">Security Lockout Active</span>
+          </div>
+
+          <div class="field-group">
+            <label for="input-owner-pin">Owner Security PIN / Password</label>
+            <input type="password" id="input-owner-pin" placeholder="Enter owner PIN" maxlength="20" autocomplete="current-password" />
+          </div>
+          <button class="btn btn-primary" id="btn-login-owner">Unlock Owner Portal</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- 2. Gym Member Dashboard (Dual-Mode: Member View / Owner Inspector View) -->
+    <main id="view-member" class="panel hidden">
+      <div class="section-title-row">
+        <div>
+          <span class="badge badge-emerald" id="m-plan-badge">Plan</span>
+          <h1 id="m-member-name">Member Name</h1>
+          <span class="text-subtle" id="m-member-sub">ID: ---</span>
+        </div>
+        <div class="button-cluster">
+          <button id="btn-owner-back" class="btn btn-secondary btn-sm hidden" onclick="returnToOwnerHub()">← Back to Hub</button>
+          <button id="btn-member-logout" class="btn btn-secondary btn-sm" onclick="handleMemberLogout()">Log Out</button>
+        </div>
+      </div>
+
+      <div class="grid grid-hero">
+        <div class="card hero-card">
+          <span class="card-eyebrow">Validity Status</span>
+          <div class="countdown-stat">
+            <span id="m-days-number" class="big-number">0</span>
+            <span class="countdown-unit">Days Remaining</span>
+          </div>
+          <div class="progress-track">
+            <div id="m-progress-bar" class="progress-fill"></div>
+          </div>
+          <div class="dates-flex">
+            <div>
+              <span class="date-label">Start Date</span>
+              <strong id="m-start-date">--</strong>
+            </div>
+            <div class="text-right">
+              <span class="date-label">End Date</span>
+              <strong id="m-end-date">--</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="card dues-card">
+          <div>
+            <span class="card-eyebrow">Outstanding Balance</span>
+            <div class="dues-stat">
+              <span class="currency">₹</span>
+              <span id="m-due-amount">0</span>
+            </div>
+          </div>
+          <div id="m-status-pill" class="status-pill status-active">Active Member</div>
+        </div>
+      </div>
+
+      <div class="card mt-6">
+        <h3 class="card-title">Transaction History</h3>
+        <div class="table-container">
+          <table class="minimal-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Notes / Purpose</th>
+                <th>Payment Mode</th>
+                <th class="text-right">Amount Paid</th>
+              </tr>
+            </thead>
+            <tbody id="m-transaction-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- 3. Gym Owner Dashboard -->
+    <main id="view-owner" class="panel hidden">
+      <div class="section-title-row">
+        <div>
+          <h1>Owner Command Hub</h1>
+          <p class="text-subtle">Monitor member lifecycles, dues, and record manual admissions</p>
+        </div>
+        <div class="button-cluster">
+          <button class="btn btn-secondary btn-sm" id="btn-refresh">🔄 Sync</button>
+          <button class="btn btn-secondary btn-sm" onclick="handleOwnerExit()">Exit</button>
+        </div>
+      </div>
+
+      <div class="grid grid-3 mb-6">
+        <div class="card kpi-card">
+          <span class="kpi-label">Total Active Members</span>
+          <span class="kpi-val" id="stat-total">0</span>
+        </div>
+        <div class="card kpi-card kpi-warning">
+          <span class="kpi-label">Expiring Soon (≤ 7 Days)</span>
+          <span class="kpi-val text-warning" id="stat-expiring">0</span>
+        </div>
+        <div class="card kpi-card kpi-danger">
+          <span class="kpi-label">Expired</span>
+          <span class="kpi-val text-danger" id="stat-expired">0</span>
+        </div>
+      </div>
+
+      <div class="card p-0 overflow-hidden">
+        <div class="tabs-nav">
+          <button class="tab-item active" id="btn-owner-all" onclick="setOwnerTab('all')">All Members</button>
+          <button class="tab-item" id="btn-owner-expiring" onclick="setOwnerTab('expiring')">Expiring Queue</button>
+          <button class="tab-item" id="btn-owner-add" onclick="setOwnerTab('add')">+ New Admission</button>
+        </div>
+
+        <div id="owner-table-view" class="p-4">
+          <input type="text" id="owner-search" class="search-input" placeholder="🔍 Search member by name, phone number, or ID..." />
+          <div class="table-container">
+            <table class="minimal-table">
+              <thead>
+                <tr>
+                  <th>Member ID / Name</th>
+                  <th>Phone Number</th>
+                  <th>Plan Name</th>
+                  <th>Plan Start Date</th>
+                  <th>Validity Status</th>
+                  <th>Total Due</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="owner-member-rows"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Add Member Form with Custom Plan Duration Input -->
+        <div id="owner-form-view" class="p-6 hidden">
+          <form id="admission-form" class="admission-grid">
+            <div class="field-group">
+              <label for="f-name">Full Name *</label>
+              <input type="text" id="f-name" required placeholder="e.g. Rahul Sharma" />
+            </div>
+            <div class="field-group">
+              <label for="f-phone">Phone Number <span style="font-weight:400; text-transform:none; color:var(--emerald-text);">(Optional)</span></label>
+              <input type="tel" id="f-phone" placeholder="Optional (Leave empty if not provided)" />
+            </div>
+            <div class="field-group">
+              <label for="f-plan">Plan Name *</label>
+              <select id="f-plan">
+                <option value="1 Month Basic" data-days="30">1 Month Basic (30 Days)</option>
+                <option value="3 Month Pro" data-days="90">3 Month Pro (90 Days)</option>
+                <option value="6 Month Pro" data-days="180">6 Month Pro (180 Days)</option>
+                <option value="1 Year VIP" data-days="365">1 Year VIP (365 Days)</option>
+                <option value="Custom Plan" data-days="custom">Custom Plan</option>
+              </select>
+            </div>
+            
+            <!-- Custom Days Input Field (Shows only when Custom Plan is selected) -->
+            <div class="field-group hidden" id="f-custom-days-group">
+              <label for="f-custom-days">Custom Plan Duration (Days) *</label>
+              <input type="number" id="f-custom-days" min="1" max="3650" placeholder="e.g. 20, 45, 1" />
+            </div>
+
+            <div class="field-group">
+              <label for="f-start-date">Plan Start Date *</label>
+              <input type="date" id="f-start-date" required />
+            </div>
+            <div class="field-group">
+              <label for="f-end-date">Calculated End Date</label>
+              <input type="date" id="f-end-date" required readonly class="readonly-field" />
+            </div>
+            <div class="field-group">
+              <label for="f-paid">Amount Paid (₹) *</label>
+              <input type="number" id="f-paid" required placeholder="1500" />
+            </div>
+            <div class="field-group">
+              <label for="f-due">Total Due Amount (₹)</label>
+              <input type="number" id="f-due" value="0" placeholder="0" />
+            </div>
+            <div class="field-group">
+              <label for="f-mode">Payment Mode</label>
+              <select id="f-mode">
+                <option value="UPI">UPI / QR</option>
+                <option value="Cash">Cash</option>
+                <option value="Card">Card</option>
+              </select>
+            </div>
+            <div class="field-group span-2">
+              <label for="f-notes">Transaction Notes</label>
+              <input type="text" id="f-notes" placeholder="e.g. Initial admission & registration" />
+            </div>
+            <div class="span-2 mt-4">
+              <button type="submit" id="btn-save-member" class="btn btn-primary">Save Member & Record Transaction</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+
+    <!-- 4. Owner Renewal Modal (Also Supports Custom Plan) -->
+    <div id="renew-modal" class="modal-backdrop hidden">
+      <div class="card modal-box">
+        <div class="section-title-row">
+          <div>
+            <h3>Renew / Resume Membership</h3>
+            <p class="text-subtle" id="renew-sub-title">Member: --</p>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="closeRenewModal()">✕</button>
+        </div>
+
+        <form id="renew-form" class="admission-grid mt-4">
+          <input type="hidden" id="r-member-id" />
+          <input type="hidden" id="r-full-name" />
+          <input type="hidden" id="r-phone" />
+
+          <div class="field-group span-2">
+            <label for="r-plan">Select New Plan *</label>
+            <select id="r-plan">
+              <option value="1 Month Basic" data-days="30">1 Month Basic (30 Days)</option>
+              <option value="3 Month Pro" data-days="90">3 Month Pro (90 Days)</option>
+              <option value="6 Month Pro" data-days="180">6 Month Pro (180 Days)</option>
+              <option value="1 Year VIP" data-days="365">1 Year VIP (365 Days)</option>
+              <option value="Custom Plan" data-days="custom">Custom Plan</option>
+            </select>
+          </div>
+          
+          <div class="field-group span-2 hidden" id="r-custom-days-group">
+            <label for="r-custom-days">Custom Plan Duration (Days) *</label>
+            <input type="number" id="r-custom-days" min="1" max="3650" placeholder="e.g. 20, 45, 1" />
+          </div>
+
+          <div class="field-group">
+            <label for="r-start-date">Resume / Start Date *</label>
+            <input type="date" id="r-start-date" required />
+          </div>
+          <div class="field-group">
+            <label for="r-end-date">New End Date</label>
+            <input type="date" id="r-end-date" required readonly class="readonly-field" />
+          </div>
+          <div class="field-group">
+            <label for="r-paid">Amount Paid (₹) *</label>
+            <input type="number" id="r-paid" required placeholder="e.g. 1500" />
+          </div>
+          <div class="field-group">
+            <label for="r-due">Remaining Due (₹)</label>
+            <input type="number" id="r-due" value="0" />
+          </div>
+          <div class="field-group span-2">
+            <label for="r-mode">Payment Mode</label>
+            <select id="r-mode">
+              <option value="UPI">UPI / QR</option>
+              <option value="Cash">Cash</option>
+              <option value="Card">Card</option>
+            </select>
+          </div>
+          <div class="span-2 mt-4">
+            <button type="submit" id="btn-submit-renew" class="btn btn-primary">Confirm Renewal & Activate Plan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
