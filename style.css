@@ -838,3 +838,24 @@ input:focus, select:focus {
     font-size: 17px;
   }
 }
+
+/* Styling for the first '+' admission tab */
+.tab-plus {
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  padding: 8px 16px !important;
+  color: var(--primary) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-plus:hover {
+  background: var(--surface) !important;
+  color: var(--primary-hover) !important;
+}
+
+.tab-plus.active {
+  background: var(--surface) !important;
+  border-bottom-color: var(--primary) !important;
+}
