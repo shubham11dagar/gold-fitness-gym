@@ -22,13 +22,13 @@
 
   <div class="app-shell">
     <header class="app-header">
-     <div class="brand">
-      <img src="gymlogo.png" alt="Gym Logo" style="width: 38px; height: 38px; object-fit: contain; border-radius: 8px;" />
-      <div>
-        <span class="brand-name">GOLD FITNESS GYM</span>
-        <span class="brand-tag">FORGE YOUR STRENGTH</span>
+      <div class="brand">
+        <img src="gymlogo.png" alt="Gym Logo" style="width: 38px; height: 38px; object-fit: contain; border-radius: 8px;" />
+        <div>
+          <span class="brand-name">GOLD FITNESS GYM</span>
+          <span class="brand-tag">FORGE YOUR STRENGTH</span>
+        </div>
       </div>
-    </div>
       <div class="header-controls">
         <div id="sync-pill" class="sync-pill hidden">
           <span class="pulse"></span>
@@ -128,7 +128,7 @@
         <div class="table-container">
           <table class="minimal-table">
             <thead>
-             <tr>
+              <tr>
                 <th>Date</th>
                 <th>Amount Paid</th>
                 <th>Payment Mode</th>
@@ -154,7 +154,7 @@
         </div>
       </div>
 
-          <!-- Compact Single-Row Stats Bar -->
+      <!-- Compact Single-Row Stats Bar -->
       <div class="card compact-stats-bar mb-4">
         <div class="stat-col">
           <span class="stat-lbl">Active Members</span>
@@ -173,15 +173,15 @@
       </div>
 
       <div class="card p-0 overflow-hidden">
-      <div class="tabs-nav">
-        <button class="tab-item tab-plus" id="btn-owner-add" onclick="setOwnerTab('add')" title="New Admission">+</button>
-        <button class="tab-item active" id="btn-owner-all" onclick="setOwnerTab('all')">All Members</button>
-        <button class="tab-item" id="btn-owner-expiring" onclick="setOwnerTab('expiring')">Expiring Queue</button>
-        <button class="tab-item" id="btn-owner-dues" onclick="setOwnerTab('dues')">Pending Dues</button>
-      </div>
+        <div class="tabs-nav">
+          <button class="tab-item tab-plus" id="btn-owner-add" onclick="setOwnerTab('add')" title="New Admission">+</button>
+          <button class="tab-item active" id="btn-owner-all" onclick="setOwnerTab('all')">All Members</button>
+          <button class="tab-item" id="btn-owner-expiring" onclick="setOwnerTab('expiring')">Expiring Queue</button>
+          <button class="tab-item" id="btn-owner-dues" onclick="setOwnerTab('dues')">Pending Dues</button>
+        </div>
 
         <div id="owner-table-view" class="p-4">
-          <input type="text" id="owner-search" class="search-input" placeholder="🔍 Search member by name, phone number, or ID..." />
+          <input type="text" id="owner-search" class="search-input" placeholder="🔍 Search member by name or Member ID / Phone..." />
           <div class="table-container">
             <table class="minimal-table">
               <thead>
@@ -191,7 +191,6 @@
                   <th>Plan Start Date</th>
                   <th>Plan Name</th>
                   <th>Total Due</th>
-                  <th>Phone Number</th>
                   <th class="text-right">Actions</th>
                 </tr>
               </thead>
@@ -200,7 +199,7 @@
           </div>
         </div>
 
-        <!-- Add Member Form with Custom Plan Duration Input -->
+        <!-- Add Member Form -->
         <div id="owner-form-view" class="p-6 hidden">
           <form id="admission-form" class="admission-grid">
             <div class="field-group">
@@ -208,8 +207,8 @@
               <input type="text" id="f-name" required placeholder="e.g. Rahul Sharma" />
             </div>
             <div class="field-group">
-              <label for="f-phone">Phone Number <span style="font-weight:400; text-transform:none; color:var(--emerald-text);">(Optional)</span></label>
-              <input type="tel" id="f-phone" placeholder="Optional (Leave empty if not provided)" />
+              <label for="f-phone">Phone Number / Member ID <span style="font-weight:400; text-transform:none; color:var(--emerald-text);">(Optional)</span></label>
+              <input type="text" id="f-phone" placeholder="Enter phone or leave blank to auto-generate ID" />
             </div>
             <div class="field-group">
               <label for="f-plan">Plan Name *</label>
@@ -222,7 +221,7 @@
               </select>
             </div>
             
-            <!-- Custom Days Input Field (Shows only when Custom Plan is selected) -->
+            <!-- Custom Days Input Field -->
             <div class="field-group hidden" id="f-custom-days-group">
               <label for="f-custom-days">Custom Plan Duration (Days) *</label>
               <input type="number" id="f-custom-days" min="1" max="3650" placeholder="e.g. 20, 45, 1" />
@@ -264,7 +263,7 @@
       </div>
     </main>
 
-    <!-- 4. Owner Renewal Modal (Also Supports Custom Plan) -->
+    <!-- 4. Owner Renewal Modal -->
     <div id="renew-modal" class="modal-backdrop hidden">
       <div class="card modal-box">
         <div class="section-title-row">
@@ -272,13 +271,12 @@
             <h3>Renew / Resume Membership</h3>
             <p class="text-subtle" id="renew-sub-title">Member: --</p>
           </div>
-          <button class="btn btn-secondary btn-sm" onclick="closeRenewModal()">✕</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="closeRenewModal()">✕</button>
         </div>
 
         <form id="renew-form" class="admission-grid mt-4">
           <input type="hidden" id="r-member-id" />
           <input type="hidden" id="r-full-name" />
-          <input type="hidden" id="r-phone" />
 
           <div class="field-group span-2">
             <label for="r-plan">Select New Plan *</label>
@@ -327,23 +325,22 @@
       </div>
     </div>
 
+    <!-- Custom Confirmation Modal -->
+    <div id="custom-alert-modal" class="modal-backdrop hidden">
+      <div class="card modal-box" style="max-width: 380px; text-align: center; margin: auto;">
+        <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 8px; color: var(--rose-text);">Delete Member</h3>
+        <p id="custom-alert-msg" class="text-subtle" style="font-size: 13px; margin-bottom: 20px;"></p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+          <button type="button" class="btn btn-secondary btn-sm" id="custom-alert-cancel" style="width: 100%;">Cancel</button>
+          <button type="button" class="btn btn-primary btn-sm" id="custom-alert-confirm" style="background: #e11d48; width: 100%;">Delete</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast" class="toast hidden"></div>
   </div>
 
   <script src="app.js"></script>
-
-<!-- Custom Confirmation Modal -->
-<div id="custom-alert-modal" class="modal-backdrop hidden">
-  <div class="card modal-box" style="max-width: 380px; text-align: center; margin: auto;">
-    <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 8px; color: var(--rose-text);">Delete Member</h3>
-    <p id="custom-alert-msg" class="text-subtle" style="font-size: 13px; margin-bottom: 20px;"></p>
-    <div style="display: flex; gap: 10px; justify-content: center;">
-      <button type="button" class="btn btn-secondary btn-sm" id="custom-alert-cancel" style="width: 100%;">Cancel</button>
-      <button type="button" class="btn btn-primary btn-sm" id="custom-alert-confirm" style="background: #e11d48; width: 100%;">Delete</button>
-    </div>
-  </div>
-</div>
-
 </body>
 </html>
