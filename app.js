@@ -734,11 +734,14 @@ function renderOwner() {
       statusText = `Expiring (${days}d left)`;
     }
 
-   const tr = document.createElement("tr");
+    const tr = document.createElement("tr");
 
     // Only highlight in 'all' and 'expiring' tabs if there is a due balance
     const shouldHighlight = (State.ownerTab === "all" || State.ownerTab === "expiring") && dueAmount > 0;
     tr.className = shouldHighlight ? "row-due-highlight" : "";
+
+    // Safe escaped name for inline onclick
+    const safeName = String(m.Full_Name || "Unnamed").replace(/'/g, "\\'");
 
     // Render cells (First 3 cells have onclick="inspectMemberCard(...)")
     tr.innerHTML = `
@@ -758,16 +761,15 @@ function renderOwner() {
       </td>
       <td><strong>${maskPhoneNumber(m.Phone_Number)}</strong></td>
       <td class="text-right">
-        <div class="action-cluster">
-          <button class="btn-renew" onclick="openRenewModal('${m.Member_ID}')">Renew</button>
-          <button class="btn-delete" onclick="deleteMember('${m.Member_ID}', '${m.Full_Name}')">Delete</button>
+        <div class="action-cluster" onclick="event.stopPropagation()">
+          <button type="button" class="btn-renew" onclick="openRenewModal('${m.Member_ID}')">Renew</button>
+          <button type="button" class="btn-delete" onclick="deleteMember('${m.Member_ID}', '${safeName}')">Delete</button>
         </div>
       </td>
     `;
     tbody.appendChild(tr);
   });
 }
-
 // --- ADMISSION SUBMISSION ---
 async function handleAdmission(e) {
   e.preventDefault();
@@ -944,6 +946,31 @@ function closeRenewModal() {
   toggleCustomDaysInput("r-plan", "r-custom-days-group");
 }
 
+function showCustomConfirm(message) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById("custom-alert-modal");
+    const msgEl = document.getElementById("custom-alert-msg");
+    const confirmBtn = document.getElementById("custom-alert-confirm");
+    const cancelBtn = document.getElementById("custom-alert-cancel");
+
+    msgEl.innerText = message;
+    modal.classList.remove("hidden");
+
+    function cleanup(result) {
+      modal.classList.add("hidden");
+      confirmBtn.removeEventListener("click", onConfirm);
+      cancelBtn.removeEventListener("click", onCancel);
+      resolve(result);
+    }
+
+    function onConfirm() { cleanup(true); }
+    function onCancel() { cleanup(false); }
+
+    confirmBtn.addEventListener("click", onConfirm);
+    cancelBtn.addEventListener("click", onCancel);
+  });
+}
+
 async function handleRenewSubmit(e) {
   e.preventDefault();
   dismissMobileKeyboard();
@@ -994,9 +1021,8 @@ async function handleRenewSubmit(e) {
 }
 
 async function deleteMember(memberId, fullName) {
-  dismissMobileKeyboard();
-  
-  const confirmed = confirm(`Are you sure you want to delete ${fullName} (ID: ${memberId}) from gym records?`);
+  // Call the custom dialog instead of window.confirm
+  const confirmed = await showCustomConfirm(`Are you sure you want to delete ${fullName} (ID: ${memberId}) from gym records?`);
   if (!confirmed) return;
 
   showSpinner(`Deleting ${fullName}...`);
@@ -1021,7 +1047,7 @@ async function deleteMember(memberId, fullName) {
     }
   } catch (err) {
     console.error("Delete Error:", err);
-    showToast("Error deleting member. Check network or script logs.", true);
+    showToast("Error deleting member. Please check network.", true);
   } finally {
     hideSpinner();
   }
