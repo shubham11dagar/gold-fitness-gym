@@ -396,6 +396,26 @@ function setupEvents() {
   const paneMember = document.getElementById("auth-member-pane");
   const paneOwner = document.getElementById("auth-owner-pane");
 
+  // Lift Owner PIN card when mobile keyboard pops up
+  const pinInput = document.getElementById("input-owner-pin");
+  const authCard = document.querySelector("#view-auth .card") || document.getElementById("auth-owner-pane");
+
+  if (pinInput) {
+    pinInput.addEventListener("focus", () => {
+      // Small timeout ensures the mobile keyboard has begun opening before scrolling
+      setTimeout(() => {
+        const unlockBtn = document.getElementById("btn-login-owner");
+        if (unlockBtn) {
+          unlockBtn.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 300);
+    });
+
+    pinInput.addEventListener("blur", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
   if (tabMember && tabOwner) {
     tabMember.addEventListener("click", () => {
       tabMember.classList.add("active");
@@ -714,31 +734,31 @@ function renderOwner() {
       statusText = `Expiring (${days}d left)`;
     }
 
-    const tr = document.createElement("tr");
+   const tr = document.createElement("tr");
 
-    // Only highlight in 'all' and 'expiring' tabs
+    // Only highlight in 'all' and 'expiring' tabs if there is a due balance
     const shouldHighlight = (State.ownerTab === "all" || State.ownerTab === "expiring") && dueAmount > 0;
-    tr.className = `clickable-row ${shouldHighlight ? 'row-due-highlight' : ''}`.trim();
+    tr.className = shouldHighlight ? "row-due-highlight" : "";
 
-    // Row Click: Inspect Member Card
-    tr.addEventListener("click", () => {
-      inspectMemberCard(m.Member_ID);
-    });
-
+    // Render cells (First 3 cells have onclick="inspectMemberCard(...)")
     tr.innerHTML = `
-      <td><span class="badge ${badgeClass}">${statusText}</span></td>
-      <td>
+      <td class="clickable-cell" onclick="inspectMemberCard('${m.Member_ID}')" title="Click to view member dashboard">
+        <span class="badge ${badgeClass}">${statusText}</span>
+      </td>
+      <td class="clickable-cell" onclick="inspectMemberCard('${m.Member_ID}')" title="Click to view member dashboard">
         <strong>${m.Full_Name || "Unnamed"}</strong>
         <div style="font-size: 10px; color: var(--text-muted);">${m.Member_ID}</div>
       </td>
-      <td><strong>${formatDate(m.Plan_Start_Date || m["Plan Start Date"])}</strong></td>
+      <td class="clickable-cell" onclick="inspectMemberCard('${m.Member_ID}')" title="Click to view member dashboard">
+        <strong>${formatDate(m.Plan_Start_Date || m["Plan Start Date"])}</strong>
+      </td>
       <td><span class="badge" style="background: var(--surface-alt);">${m["Plan Name"] || m.Plan_Name || "Standard"}</span></td>
       <td class="${dueAmount > 0 ? 'text-warning font-bold' : 'text-subtle'}">
         ₹${dueAmount.toLocaleString()}
       </td>
       <td><strong>${maskPhoneNumber(m.Phone_Number)}</strong></td>
       <td class="text-right">
-        <div class="action-cluster" onclick="event.stopPropagation()">
+        <div class="action-cluster">
           <button class="btn-renew" onclick="openRenewModal('${m.Member_ID}')">Renew</button>
           <button class="btn-delete" onclick="deleteMember('${m.Member_ID}', '${m.Full_Name}')">Delete</button>
         </div>
