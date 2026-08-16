@@ -995,23 +995,33 @@ async function handleRenewSubmit(e) {
 
 async function deleteMember(memberId, fullName) {
   dismissMobileKeyboard();
-  const confirmed = confirm(`Are you sure you want to delete ${fullName} (${memberId}) from the gym records? This cannot be undone.`);
+  
+  const confirmed = confirm(`Are you sure you want to delete ${fullName} (ID: ${memberId}) from gym records?`);
   if (!confirmed) return;
 
   showSpinner(`Deleting ${fullName}...`);
 
   try {
-    await fetch(CONFIG.apiUrl, {
+    const res = await fetch(CONFIG.apiUrl, {
       method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "deleteMember", memberId: memberId })
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({
+        action: "deleteMember",
+        memberId: String(memberId).trim()
+      })
     });
 
-    showToast("Member successfully removed");
-    setTimeout(fetchData, 1200);
+    const result = await res.json();
+
+    if (result.status === "success") {
+      showToast(`${fullName} deleted successfully`);
+      await fetchData(true);
+    } else {
+      showToast(result.message || "Failed to delete member", true);
+    }
   } catch (err) {
-    showToast("Failed to delete member", true);
+    console.error("Delete Error:", err);
+    showToast("Error deleting member. Check network or script logs.", true);
   } finally {
     hideSpinner();
   }
