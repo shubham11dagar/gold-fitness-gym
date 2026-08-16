@@ -1,5 +1,5 @@
 /* ==========================================================================
-   AURA GYM - COMPLETE CLIENT ENGINE
+   GOLD FITNESS GYM - COMPLETE CLIENT ENGINE
    - Mobile Keyboard Auto-Dismiss: Calls blur() on Enter, Go, and Form Submits
    - Custom Plan Support: Full manual day input (e.g. 1, 20, 45 days)
    - Original Classic Theme Toggle: Restored with '🌓'
@@ -651,7 +651,7 @@ async function fetchData(silent = false) {
   }
 }
 
-// --- OWNER DASHBOARD (WITH ROW-CLICK INSPECT) ---
+// --- OWNER DASHBOARD (WITH DUES TAB FILTER & ROW-CLICK INSPECT) ---
 function renderOwner() {
   const tbody = document.getElementById("owner-member-rows");
   const query = (document.getElementById("owner-search")?.value || "").trim().toLowerCase();
@@ -675,10 +675,14 @@ function renderOwner() {
 
   let list = [...State.members].reverse();
 
+  // Tab Filtering
   if (State.ownerTab === "expiring") {
     list = list.filter(m => getDaysRemaining(m.Plan_End_Date) <= 7);
+  } else if (State.ownerTab === "dues") {
+    list = list.filter(m => Number(m.Total_Due_Amount || 0) > 0);
   }
 
+  // Search Query Filtering
   list = list.filter(m => {
     const nameMatch = String(m.Full_Name || "").toLowerCase().includes(query);
     const idMatch = String(m.Member_ID || "").toLowerCase().includes(query);
@@ -696,6 +700,8 @@ function renderOwner() {
 
   list.forEach(m => {
     const days = getDaysRemaining(m.Plan_End_Date);
+    const dueAmount = Number(m.Total_Due_Amount || 0);
+
     let badgeClass = "badge-emerald";
     let statusText = `${days} Days Left`;
 
@@ -708,7 +714,7 @@ function renderOwner() {
     }
 
     const tr = document.createElement("tr");
-    tr.className = "clickable-row";
+    tr.className = `clickable-row ${dueAmount > 0 ? 'row-due-highlight' : ''}`.trim();
 
     // Row Click: Inspect Member Card
     tr.addEventListener("click", () => {
@@ -716,17 +722,17 @@ function renderOwner() {
     });
 
     tr.innerHTML = `
+      <td><span class="badge ${badgeClass}">${statusText}</span></td>
       <td>
         <strong>${m.Full_Name || "Unnamed"}</strong>
         <div style="font-size: 10px; color: var(--text-muted);">${m.Member_ID}</div>
       </td>
-      <td><strong>${maskPhoneNumber(m.Phone_Number)}</strong></td>
-      <td><span class="badge" style="background: var(--surface-alt);">${m["Plan Name"] || m.Plan_Name || "Standard"}</span></td>
       <td><strong>${formatDate(m.Plan_Start_Date || m["Plan Start Date"])}</strong></td>
-      <td><span class="badge ${badgeClass}">${statusText}</span></td>
-      <td class="${Number(m.Total_Due_Amount) > 0 ? 'text-warning font-bold' : 'text-subtle'}">
-        ₹${Number(m.Total_Due_Amount || 0).toLocaleString()}
+      <td><span class="badge" style="background: var(--surface-alt);">${m["Plan Name"] || m.Plan_Name || "Standard"}</span></td>
+      <td class="${dueAmount > 0 ? 'text-warning font-bold' : 'text-subtle'}">
+        ₹${dueAmount.toLocaleString()}
       </td>
+      <td><strong>${maskPhoneNumber(m.Phone_Number)}</strong></td>
       <td class="text-right">
         <div class="action-cluster" onclick="event.stopPropagation()">
           <button class="btn-renew" onclick="openRenewModal('${m.Member_ID}')">Renew</button>
