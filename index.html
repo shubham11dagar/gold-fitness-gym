@@ -329,5 +329,18 @@
   </div>
 
   <script src="app.js"></script>
+  
+<!-- Custom Confirmation Modal -->
+<div id="custom-alert-modal" class="modal-backdrop hidden">
+  <div class="card modal-box" style="max-width: 380px; text-align: center; margin: auto;">
+    <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 8px; color: var(--rose-text);">Delete Member</h3>
+    <p id="custom-alert-msg" class="text-subtle" style="font-size: 13px; margin-bottom: 20px;"></p>
+    <div style="display: flex; gap: 10px; justify-content: center;">
+      <button type="button" class="btn btn-secondary btn-sm" id="custom-alert-cancel" style="width: 100%;">Cancel</button>
+      <button type="button" class="btn btn-primary btn-sm" id="custom-alert-confirm" style="background: #e11d48; width: 100%;">Delete</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
