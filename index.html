@@ -22,13 +22,13 @@
 
   <div class="app-shell">
     <header class="app-header">
-    <div class="brand">
-    <img src="gymlogo.png" alt="Gym Logo" style="width: 38px; height: 38px; object-fit: contain; border-radius: 8px;" />
-    <div>
-      <span class="brand-name">GOLD FITNESS GYM</span>
-      <span class="brand-tag">FORGE YOUR STRENGTH</span>
+     <div class="brand">
+      <img src="gymlogo.png" alt="Gym Logo" style="width: 38px; height: 38px; object-fit: contain; border-radius: 8px;" />
+      <div>
+        <span class="brand-name">GOLD FITNESS GYM</span>
+        <span class="brand-tag">FORGE YOUR STRENGTH</span>
+      </div>
     </div>
-  </div>
       <div class="header-controls">
         <div id="sync-pill" class="sync-pill hidden">
           <span class="pulse"></span>
@@ -173,6 +173,7 @@
         <div class="tabs-nav">
           <button class="tab-item active" id="btn-owner-all" onclick="setOwnerTab('all')">All Members</button>
           <button class="tab-item" id="btn-owner-expiring" onclick="setOwnerTab('expiring')">Expiring Queue</button>
+          <button class="tab-item" id="btn-owner-dues" onclick="setOwnerTab('dues')">Pending Dues</button>
           <button class="tab-item" id="btn-owner-add" onclick="setOwnerTab('add')">+ New Admission</button>
         </div>
 
@@ -182,12 +183,12 @@
             <table class="minimal-table">
               <thead>
                 <tr>
-                  <th>Member ID / Name</th>
-                  <th>Phone Number</th>
-                  <th>Plan Name</th>
-                  <th>Plan Start Date</th>
                   <th>Validity Status</th>
+                  <th>Member ID / Name</th>
+                  <th>Plan Start Date</th>
+                  <th>Plan Name</th>
                   <th>Total Due</th>
+                  <th>Phone Number</th>
                   <th class="text-right">Actions</th>
                 </tr>
               </thead>
