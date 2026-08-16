@@ -679,20 +679,32 @@ input:focus, select:focus {
   to { transform: rotate(360deg); }
 }
 
-/* Toast */
-.toast {
+#toast {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  top: 1.5rem;          /* Moved from bottom to the top */
+  left: 50%;
+  transform: translateX(-50%);
   background: var(--surface);
+  color: var(--text);
+  padding: 0.85rem 1.4rem;
+  border-radius: 12px;
   border: 1px solid var(--border);
-  padding: 12px 20px;
-  border-radius: var(--radius-md);
-  font-size: 13px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35);
+  font-size: 0.875rem;
   font-weight: 600;
-  box-shadow: var(--shadow-lg);
-  z-index: 3000;
-  animation: slideUp 0.2s ease;
+  z-index: 99999;       /* Keeps it on top of all elements and inputs */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 90vw;
+  text-align: center;
+}
+
+#toast.hidden {
+  opacity: 0;
+  transform: translate(-50%, -20px);  /* Slides out smoothly to the top */
+  pointer-events: none;
 }
 
 @keyframes slideUp {
