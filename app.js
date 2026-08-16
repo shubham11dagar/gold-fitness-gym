@@ -651,7 +651,7 @@ async function fetchData(silent = false) {
   }
 }
 
-// --- OWNER DASHBOARD (WITH DUES TAB FILTER & ROW-CLICK INSPECT) ---
+// --- OWNER DASHBOARD (WITH TAB-SPECIFIC DUE HIGHLIGHTING) ---
 function renderOwner() {
   const tbody = document.getElementById("owner-member-rows");
   const query = (document.getElementById("owner-search")?.value || "").trim().toLowerCase();
@@ -682,7 +682,7 @@ function renderOwner() {
     list = list.filter(m => Number(m.Total_Due_Amount || 0) > 0);
   }
 
-  // Search Query Filtering
+  // Search Filter
   list = list.filter(m => {
     const nameMatch = String(m.Full_Name || "").toLowerCase().includes(query);
     const idMatch = String(m.Member_ID || "").toLowerCase().includes(query);
@@ -714,7 +714,10 @@ function renderOwner() {
     }
 
     const tr = document.createElement("tr");
-    tr.className = `clickable-row ${dueAmount > 0 ? 'row-due-highlight' : ''}`.trim();
+
+    // Only highlight in 'all' and 'expiring' tabs
+    const shouldHighlight = (State.ownerTab === "all" || State.ownerTab === "expiring") && dueAmount > 0;
+    tr.className = `clickable-row ${shouldHighlight ? 'row-due-highlight' : ''}`.trim();
 
     // Row Click: Inspect Member Card
     tr.addEventListener("click", () => {
@@ -807,7 +810,7 @@ async function handleAdmission(e) {
   }
 }
 
-// --- RENDER MEMBER DASHBOARD (DUAL-MODE FOR OWNER / MEMBER) ---
+// --- RENDER MEMBER DASHBOARD (REORDERED TRANSACTIONS TABLE) ---
 function renderMember() {
   const member = State.members.find(m => 
     String(m.Phone_Number).trim().toLowerCase() === String(State.activeIdentifier).trim().toLowerCase() ||
@@ -880,13 +883,14 @@ function renderMember() {
   if (userTxns.length === 0) {
     txnBody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 16px; color: var(--text-muted);">No payment records.</td></tr>`;
   } else {
+    // 1. Date | 2. Amount Paid | 3. Payment Mode | 4. Notes / Purpose
     userTxns.forEach(t => {
       txnBody.innerHTML += `
         <tr>
           <td><strong>${formatDate(t.Date)}</strong></td>
-          <td>${t.Notes || "Payment"}</td>
+          <td><strong>₹${Number(t["Amount Paid"] || t.Amount_Paid || 0).toLocaleString()}</strong></td>
           <td><span class="badge" style="background: var(--surface-alt);">${t["Payment Mode"] || t.Payment_Mode || "Cash"}</span></td>
-          <td class="text-right"><strong>₹${Number(t["Amount Paid"] || t.Amount_Paid || 0).toLocaleString()}</strong></td>
+          <td>${t.Notes || "Payment"}</td>
         </tr>
       `;
     });
