@@ -34,7 +34,9 @@
           <span class="pulse"></span>
           <span>LIVE</span>
         </div>
-        <button id="theme-btn" class="icon-button" aria-label="Toggle Theme">🌓</button>
+        <button id="theme-btn" class="icon-button modern-icon-btn" aria-label="Toggle Theme">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
       </div>
     </header>
 
@@ -78,9 +80,25 @@
           <p class="text-subtle">Monitor member plans & dues</p>
         </div>
         <div class="button-cluster">
-          <button class="btn btn-secondary btn-sm" onclick="openPlanEditorModal()">⚙️ Edit Prices</button>
-          <button class="btn btn-secondary btn-sm" id="btn-refresh">Sync</button>
-          <button class="btn btn-secondary btn-sm" onclick="handleOwnerExit()">Exit</button>
+          <!-- Modern SVG Icon Action Buttons -->
+          <button class="icon-button modern-icon-btn" onclick="openPlanEditorModal()" title="Edit Plan Prices">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+          </button>
+          <button class="icon-button modern-icon-btn" id="btn-refresh" title="Sync Records">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.66-5.66"></path>
+            </svg>
+          </button>
+         <!-- Modern Power / On-Off SVG Icon for Logout -->
+          <button class="icon-button modern-icon-btn btn-logout-icon" onclick="promptOwnerExit()" title="Log Out">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+              <line x1="12" y1="2" x2="12" y2="12"></line>
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -144,16 +162,16 @@
               <label for="f-plan">Plan Name *</label>
               <select id="f-plan">
                 <optgroup label="Without Treadmill">
-                  <option value="1 Month (Without Treadmill)" data-days="30" data-price="1200">1 Month - ₹1,200 (30 Days)</option>
-                  <option value="3 Month (Without Treadmill)" data-days="90" data-price="3000">3 Month - ₹3,000 (90 Days)</option>
-                  <option value="6 Month (Without Treadmill)" data-days="180" data-price="5500">6 Month - ₹5,500 (180 Days)</option>
-                  <option value="12 Month (Without Treadmill)" data-days="365" data-price="10000">12 Month - ₹10,000 (365 Days)</option>
+                  <option value="1 Month (Without Treadmill)" data-days="30" data-price="1200">1 Month - ₹1,200</option>
+                  <option value="3 Month (Without Treadmill)" data-days="90" data-price="3000">3 Month - ₹3,000</option>
+                  <option value="6 Month (Without Treadmill)" data-days="180" data-price="5500">6 Month - ₹5,500</option>
+                  <option value="12 Month (Without Treadmill)" data-days="365" data-price="10000">12 Month - ₹10,000</option>
                 </optgroup>
                 <optgroup label="With Treadmill">
-                  <option value="1 Month (With Treadmill)" data-days="30" data-price="1500">1 Month - ₹1,500 (30 Days)</option>
-                  <option value="3 Month (With Treadmill)" data-days="90" data-price="4000">3 Month - ₹4,000 (90 Days)</option>
-                  <option value="6 Month (With Treadmill)" data-days="180" data-price="7500">6 Month - ₹7,500 (180 Days)</option>
-                  <option value="12 Month (With Treadmill)" data-days="365" data-price="14000">12 Month - ₹14,000 (365 Days)</option>
+                  <option value="1 Month (With Treadmill)" data-days="30" data-price="1500">1 Month - ₹1,500</option>
+                  <option value="3 Month (With Treadmill)" data-days="90" data-price="4000">3 Month - ₹4,000</option>
+                  <option value="6 Month (With Treadmill)" data-days="180" data-price="7500">6 Month - ₹7,500</option>
+                  <option value="12 Month (With Treadmill)" data-days="365" data-price="14000">12 Month - ₹14,000</option>
                 </optgroup>
                 <option value="Custom Plan" data-days="custom" data-price="0">Custom Plan</option>
               </select>
@@ -267,7 +285,7 @@
 
     <!-- 4. Owner Renewal Modal -->
     <div id="renew-modal" class="modal-backdrop hidden">
-      <div class="card modal-box">
+      <div class="card modal-box scrollable-modal">
         <div class="section-title-row">
           <div>
             <h3>Renew / Resume Membership</h3>
@@ -284,16 +302,16 @@
             <label for="r-plan">Select New Plan *</label>
             <select id="r-plan">
               <optgroup label="Without Treadmill">
-                <option value="1 Month (Without Treadmill)" data-days="30" data-price="1200">1 Month - ₹1,200 (30 Days)</option>
-                <option value="3 Month (Without Treadmill)" data-days="90" data-price="3000">3 Month - ₹3,000 (90 Days)</option>
-                <option value="6 Month (Without Treadmill)" data-days="180" data-price="5500">6 Month - ₹5,500 (180 Days)</option>
-                <option value="12 Month (Without Treadmill)" data-days="365" data-price="10000">12 Month - ₹10,000 (365 Days)</option>
+                <option value="1 Month (Without Treadmill)" data-days="30" data-price="1200">1 Month - ₹1,200</option>
+                <option value="3 Month (Without Treadmill)" data-days="90" data-price="3000">3 Month - ₹3,000</option>
+                <option value="6 Month (Without Treadmill)" data-days="180" data-price="5500">6 Month - ₹5,500</option>
+                <option value="12 Month (Without Treadmill)" data-days="365" data-price="10000">12 Month - ₹10,000</option>
               </optgroup>
               <optgroup label="With Treadmill">
-                <option value="1 Month (With Treadmill)" data-days="30" data-price="1500">1 Month - ₹1,500 (30 Days)</option>
-                <option value="3 Month (With Treadmill)" data-days="90" data-price="4000">3 Month - ₹4,000 (90 Days)</option>
-                <option value="6 Month (With Treadmill)" data-days="180" data-price="7500">6 Month - ₹7,500 (180 Days)</option>
-                <option value="12 Month (With Treadmill)" data-days="365" data-price="14000">12 Month - ₹14,000 (365 Days)</option>
+                <option value="1 Month (With Treadmill)" data-days="30" data-price="1500">1 Month - ₹1,500</option>
+                <option value="3 Month (With Treadmill)" data-days="90" data-price="4000">3 Month - ₹4,000</option>
+                <option value="6 Month (With Treadmill)" data-days="180" data-price="7500">6 Month - ₹7,500</option>
+                <option value="12 Month (With Treadmill)" data-days="365" data-price="14000">12 Month - ₹14,000</option>
               </optgroup>
               <option value="Custom Plan" data-days="custom" data-price="0">Custom Plan</option>
             </select>
@@ -335,9 +353,9 @@
       </div>
     </div>
 
-    <!-- Edit Plan Prices Modal -->
+    <!-- Edit Plan Prices Modal (Scrollable Sheet) -->
     <div id="plan-editor-modal" class="modal-backdrop hidden">
-      <div class="card modal-box" style="max-width: 450px;">
+      <div class="card modal-box scrollable-modal" style="max-width: 450px;">
         <div class="section-title-row">
           <div>
             <h3>Manage Gym Plan Prices</h3>
@@ -390,14 +408,14 @@
       </div>
     </div>
 
-    <!-- Custom Confirmation Modal -->
+    <!-- Custom Confirmation Modal (Logout & Delete) -->
     <div id="custom-alert-modal" class="modal-backdrop hidden">
       <div class="card modal-box" style="max-width: 380px; text-align: center; margin: auto;">
-        <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 8px; color: var(--rose-text);">Delete Member</h3>
+        <h3 id="custom-alert-title" style="font-size: 1.15rem; font-weight: 800; margin-bottom: 8px; color: var(--text-main);">Confirm Action</h3>
         <p id="custom-alert-msg" class="text-subtle" style="font-size: 13px; margin-bottom: 20px;"></p>
         <div style="display: flex; gap: 10px; justify-content: center;">
           <button type="button" class="btn btn-secondary btn-sm" id="custom-alert-cancel" style="width: 100%;">Cancel</button>
-          <button type="button" class="btn btn-primary btn-sm" id="custom-alert-confirm" style="background: #e11d48; width: 100%;">Delete</button>
+          <button type="button" class="btn btn-primary btn-sm" id="custom-alert-confirm" style="width: 100%;">Confirm</button>
         </div>
       </div>
     </div>
