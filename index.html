@@ -56,15 +56,19 @@
             🔒 <span id="owner-lockout-text">Security Lockout Active</span>
           </div>
 
-          <div class="field-group">
+          <div class="field-group" style="margin-bottom: 12px;">
             <label for="input-owner-pin">Master Security PIN</label>
             <div class="input-with-icon">
               <input type="password" id="input-owner-pin" placeholder="Enter owner master PIN" maxlength="20" autocomplete="current-password" />
             </div>
+            <!-- In-line error text view slot -->
+            <div id="owner-pin-error" style="font-size: 12px; font-weight: 600; color: var(--rose-text); margin-top: 6px;"></div>
           </div>
+
           <button class="btn btn-primary btn-glow" id="btn-login-owner" type="button">
             Unlock Dashboard &rarr;
           </button>
+          
           <div class="auth-footer-tag">
             <span>Encrypted Cloud Security System</span>
           </div>
