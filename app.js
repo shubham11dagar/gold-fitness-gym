@@ -192,7 +192,7 @@ function renderLockoutUI(isLocked, secondsLeft = 0) {
     if (bannerText) {
       const mins = Math.floor(secondsLeft / 60);
       const secs = secondsLeft % 60;
-      bannerText.innerText = `Too many failed attempts. Locked for ${mins > 0 ? `${mins}m ${secs}s` : `${secs}s`}.`;
+      bannerText.innerText = `Too many failed attempts. Locked for ${mins > 0 ? `${mins}m${secs}s` : `${secs}s`}.`;
     }
     if (pinInput) { pinInput.disabled = true; pinInput.value = ""; }
     if (loginBtn) loginBtn.disabled = true;
@@ -455,12 +455,23 @@ function updateDropdownDataAttributes() {
 
 function setupEvents() {
   document.getElementById("btn-login-owner")?.addEventListener("click", handleOwnerPinLogin);
-  document.getElementById("input-owner-pin")?.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") {
-      dismissMobileKeyboard();
-      handleOwnerPinLogin();
-    }
-  });
+  
+  const pinInput = document.getElementById("input-owner-pin");
+  if (pinInput) {
+    pinInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        dismissMobileKeyboard();
+        handleOwnerPinLogin();
+      }
+    });
+
+    // Smoothly scrolls the executive card into view above the mobile keyboard on focus
+    pinInput.addEventListener("focus", () => {
+      setTimeout(() => {
+        pinInput.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 300);
+    });
+  }
 
   document.querySelectorAll("input").forEach(input => {
     input.addEventListener("keydown", (e) => {
