@@ -3,7 +3,7 @@
    ========================================================================== */
 
 const CONFIG = {
-  apiUrl: "https://script.google.com/macros/s/AKfycbzPl-XV9RlJU4XVEa5HaTOsK_aPaMp3QSf449ir-MDHjW1svy_H3iHERKTi6sgbBYrINA/exec",
+  apiUrl: "https://api.goldfitness.workers.dev/",
   pollInterval: 8000
 };
 
