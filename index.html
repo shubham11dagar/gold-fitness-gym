@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Vardhmaan Gold Fitness</title>
+  <title>Gold Fitness Gym - Owner Management Console</title>
   <link rel="icon" href="gymlogo.png" type="image/png" />
   <link rel="stylesheet" href="style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,7 +26,7 @@
         <img src="gymlogo.png" alt="Gym Logo" style="width: 38px; height: 38px; object-fit: contain; border-radius: 8px;" />
         <div>
           <span class="brand-name">GOLD FITNESS GYM</span>
-          <span class="brand-tag">FORGE YOUR STRENGTH</span>
+          <span class="brand-tag">MANAGEMENT CONSOLE</span>
         </div>
       </div>
       <div class="header-controls">
@@ -38,44 +38,169 @@
       </div>
     </header>
 
-    <!-- 1. Authentication View -->
+    <!-- 1. Aesthetic Minimalist Owner Gate -->
     <main id="view-auth" class="panel active">
-      <div class="card auth-card">
-        <h2>Dashboard Access</h2>
-        <p class="text-subtle">Select your access mode to view and manage gym records</p>
-        
-        <div class="toggle-group">
-          <button id="tab-member" class="toggle-btn active">Gym Member</button>
-          <button id="tab-owner" class="toggle-btn">Gym Owner</button>
-        </div>
-
-        <!-- Member Login Pane -->
-        <div id="auth-member-pane">
-          <div class="field-group">
-            <label for="input-member-phone">Registered Phone Number or Member ID</label>
-            <input type="text" id="input-member-phone" placeholder="e.g. 9876543210 or MEM-1234" maxlength="20" />
+      <div class="auth-wrapper">
+        <div class="auth-hero-intro">
+          <div class="portal-badge">
+            <span class="portal-badge-dot"></span> RESTRICTED ACCESS
           </div>
-          <button class="btn btn-primary" id="btn-login-member">View Membership Card</button>
+          <h1 class="portal-headline">EXECUTIVE CONSOLE</h1>
+          <p class="portal-subtext">Secure administrative gateway for member records, validity ledgers, and billing management.</p>
         </div>
 
-        <!-- Owner PIN Gate Pane -->
-        <div id="auth-owner-pane" class="hidden">
-          <p class="info-note">Enter master PIN to access member records and owner controls.</p>
-          
+        <div class="card auth-card">
           <div id="owner-lockout-banner" class="status-pill status-expired mb-4 hidden" style="text-align: center;">
             🔒 <span id="owner-lockout-text">Security Lockout Active</span>
           </div>
 
           <div class="field-group">
-            <label for="input-owner-pin">Owner Security PIN / Password</label>
-            <input type="password" id="input-owner-pin" placeholder="Enter owner PIN" maxlength="20" autocomplete="current-password" />
+            <label for="input-owner-pin">Master Security PIN</label>
+            <div class="input-with-icon">
+              <input type="password" id="input-owner-pin" placeholder="Enter owner master PIN" maxlength="20" autocomplete="current-password" />
+            </div>
           </div>
-          <button class="btn btn-primary" id="btn-login-owner">Unlock Owner Portal</button>
+          <button class="btn btn-primary btn-glow" id="btn-login-owner" type="button">
+            Unlock Dashboard &rarr;
+          </button>
+          <div class="auth-footer-tag">
+            <span>Encrypted Cloud Security System</span>
+          </div>
         </div>
       </div>
     </main>
 
-    <!-- 2. Gym Member Dashboard -->
+    <!-- 2. Gym Owner Dashboard -->
+    <main id="view-owner" class="panel hidden">
+      <div class="section-title-row">
+        <div>
+          <h1>Dashboard</h1>
+          <p class="text-subtle">Monitor member plans & dues</p>
+        </div>
+        <div class="button-cluster">
+          <button class="btn btn-secondary btn-sm" onclick="openPlanEditorModal()">⚙️ Edit Prices</button>
+          <button class="btn btn-secondary btn-sm" id="btn-refresh">Sync</button>
+          <button class="btn btn-secondary btn-sm" onclick="handleOwnerExit()">Exit</button>
+        </div>
+      </div>
+
+      <!-- Compact Single-Row Stats Bar -->
+      <div class="card compact-stats-bar mb-4">
+        <div class="stat-col">
+          <span class="stat-lbl">Active Members</span>
+          <span class="stat-num" id="stat-total">0</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-col">
+          <span class="stat-lbl">Expiring (&le; 7 Days)</span>
+          <span class="stat-num text-warning" id="stat-expiring">0</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-col">
+          <span class="stat-lbl">Expired</span>
+          <span class="stat-num text-danger" id="stat-expired">0</span>
+        </div>
+      </div>
+
+      <div class="card p-0 overflow-hidden">
+        <div class="tabs-nav">
+          <button class="tab-item tab-plus" id="btn-owner-add" onclick="setOwnerTab('add')" title="New Admission">+</button>
+          <button class="tab-item active" id="btn-owner-all" onclick="setOwnerTab('all')">All Members</button>
+          <button class="tab-item" id="btn-owner-expiring" onclick="setOwnerTab('expiring')">Expiring Queue</button>
+          <button class="tab-item" id="btn-owner-dues" onclick="setOwnerTab('dues')">Pending Dues</button>
+        </div>
+
+        <div id="owner-table-view" class="p-4">
+          <input type="text" id="owner-search" class="search-input" placeholder="🔍 Search member..." />
+          <div class="table-container">
+            <table class="minimal-table">
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Member</th>
+                  <th>Date</th>
+                  <th>Plan</th>
+                  <th>Due</th>
+                  <th class="text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="owner-member-rows"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Add Member Form -->
+        <div id="owner-form-view" class="p-6 hidden">
+          <form id="admission-form" class="admission-grid">
+            <div class="field-group">
+              <label for="f-name">Full Name *</label>
+              <input type="text" id="f-name" required placeholder="e.g. Rahul Sharma" />
+            </div>
+            <div class="field-group">
+              <label for="f-phone">Phone Number / Member ID <span style="font-weight:400; text-transform:none; color:var(--emerald-text);">(Optional)</span></label>
+              <input type="text" id="f-phone" placeholder="Enter phone or leave blank for auto ID" />
+            </div>
+            <div class="field-group">
+              <label for="f-plan">Plan Name *</label>
+              <select id="f-plan">
+                <optgroup label="Without Treadmill">
+                  <option value="1 Month (Without Treadmill)" data-days="30" data-price="1200">1 Month - ₹1,200 (30 Days)</option>
+                  <option value="3 Month (Without Treadmill)" data-days="90" data-price="3000">3 Month - ₹3,000 (90 Days)</option>
+                  <option value="6 Month (Without Treadmill)" data-days="180" data-price="5500">6 Month - ₹5,500 (180 Days)</option>
+                  <option value="12 Month (Without Treadmill)" data-days="365" data-price="10000">12 Month - ₹10,000 (365 Days)</option>
+                </optgroup>
+                <optgroup label="With Treadmill">
+                  <option value="1 Month (With Treadmill)" data-days="30" data-price="1500">1 Month - ₹1,500 (30 Days)</option>
+                  <option value="3 Month (With Treadmill)" data-days="90" data-price="4000">3 Month - ₹4,000 (90 Days)</option>
+                  <option value="6 Month (With Treadmill)" data-days="180" data-price="7500">6 Month - ₹7,500 (180 Days)</option>
+                  <option value="12 Month (With Treadmill)" data-days="365" data-price="14000">12 Month - ₹14,000 (365 Days)</option>
+                </optgroup>
+                <option value="Custom Plan" data-days="custom" data-price="0">Custom Plan</option>
+              </select>
+            </div>
+            
+            <div class="field-group hidden" id="f-custom-days-group">
+              <label for="f-custom-days">Custom Plan Duration (Days) *</label>
+              <input type="number" id="f-custom-days" min="1" max="3650" placeholder="e.g. 20, 45, 1" />
+            </div>
+
+            <div class="field-group">
+              <label for="f-start-date">Plan Start Date *</label>
+              <input type="date" id="f-start-date" required />
+            </div>
+            <div class="field-group">
+              <label for="f-end-date">Calculated End Date</label>
+              <input type="date" id="f-end-date" required readonly class="readonly-field" />
+            </div>
+            <div class="field-group">
+              <label for="f-paid">Amount Paid (₹) *</label>
+              <input type="number" id="f-paid" required placeholder="1200" />
+            </div>
+            <div class="field-group">
+              <label for="f-due">Total Due Amount (₹)</label>
+              <input type="number" id="f-due" value="0" placeholder="0" />
+            </div>
+            <div class="field-group">
+              <label for="f-mode">Payment Mode</label>
+              <select id="f-mode">
+                <option value="UPI">UPI / QR</option>
+                <option value="Cash">Cash</option>
+                <option value="Card">Card</option>
+              </select>
+            </div>
+            <div class="field-group span-2">
+              <label for="f-notes">Transaction Notes</label>
+              <input type="text" id="f-notes" placeholder="e.g. Initial admission & registration" />
+            </div>
+            <div class="span-2 mt-4">
+              <button type="submit" id="btn-save-member" class="btn btn-primary">Save Member & Record Transaction</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+
+    <!-- 3. Inspector Member Dashboard View -->
     <main id="view-member" class="panel hidden">
       <div class="section-title-row">
         <div>
@@ -84,8 +209,7 @@
           <span class="text-subtle" id="m-member-sub">ID: ---</span>
         </div>
         <div class="button-cluster">
-          <button id="btn-owner-back" class="btn btn-secondary btn-sm hidden" onclick="returnToOwnerHub()">← Back</button>
-          <button id="btn-member-logout" class="btn btn-secondary btn-sm" onclick="handleMemberLogout()">Log Out</button>
+          <button id="btn-owner-back" class="btn btn-secondary btn-sm" onclick="returnToOwnerHub()">← Back to Dashboard</button>
         </div>
       </div>
 
@@ -141,128 +265,6 @@
       </div>
     </main>
 
-    <!-- 3. Gym Owner Dashboard -->
-    <main id="view-owner" class="panel hidden">
-      <div class="section-title-row">
-        <div>
-          <h1>Dashboard</h1>
-          <p class="text-subtle">Monitor member plans & dues</p>
-        </div>
-        <div class="button-cluster">
-          <button class="btn btn-secondary btn-sm" id="btn-refresh">Sync</button>
-          <button class="btn btn-secondary btn-sm" onclick="handleOwnerExit()">Exit</button>
-        </div>
-      </div>
-
-      <!-- Compact Single-Row Stats Bar -->
-      <div class="card compact-stats-bar mb-4">
-        <div class="stat-col">
-          <span class="stat-lbl">Active Members</span>
-          <span class="stat-num" id="stat-total">0</span>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-col">
-          <span class="stat-lbl">Expiring (&le; 7 Days)</span>
-          <span class="stat-num text-warning" id="stat-expiring">0</span>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-col">
-          <span class="stat-lbl">Expired</span>
-          <span class="stat-num text-danger" id="stat-expired">0</span>
-        </div>
-      </div>
-
-      <div class="card p-0 overflow-hidden">
-        <div class="tabs-nav">
-          <button class="tab-item tab-plus" id="btn-owner-add" onclick="setOwnerTab('add')" title="New Admission">+</button>
-          <button class="tab-item active" id="btn-owner-all" onclick="setOwnerTab('all')">All Members</button>
-          <button class="tab-item" id="btn-owner-expiring" onclick="setOwnerTab('expiring')">Expiring Queue</button>
-          <button class="tab-item" id="btn-owner-dues" onclick="setOwnerTab('dues')">Pending Dues</button>
-        </div>
-
-        <div id="owner-table-view" class="p-4">
-          <input type="text" id="owner-search" class="search-input" placeholder="🔍 Search member" />
-          <div class="table-container">
-            <table class="minimal-table">
-              <thead>
-                <tr>
-                  <th>Status</th>
-                  <th>Member</th>
-                  <th>Date</th>
-                  <th>Plan</th>
-                  <th>Due</th>
-                  <th class="text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody id="owner-member-rows"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Add Member Form -->
-        <div id="owner-form-view" class="p-6 hidden">
-          <form id="admission-form" class="admission-grid">
-            <div class="field-group">
-              <label for="f-name">Full Name *</label>
-              <input type="text" id="f-name" required placeholder="e.g. Rahul Sharma" />
-            </div>
-            <div class="field-group">
-              <label for="f-phone">Phone Number / Member ID <span style="font-weight:400; text-transform:none; color:var(--emerald-text);">(Optional)</span></label>
-              <input type="text" id="f-phone" placeholder="Enter phone or leave blank to auto-generate ID" />
-            </div>
-            <div class="field-group">
-              <label for="f-plan">Plan Name *</label>
-              <select id="f-plan">
-                <option value="1 Month Basic" data-days="30">1 Month Basic (30 Days)</option>
-                <option value="3 Month Pro" data-days="90">3 Month Pro (90 Days)</option>
-                <option value="6 Month Pro" data-days="180">6 Month Pro (180 Days)</option>
-                <option value="1 Year VIP" data-days="365">1 Year VIP (365 Days)</option>
-                <option value="Custom Plan" data-days="custom">Custom Plan</option>
-              </select>
-            </div>
-            
-            <!-- Custom Days Input Field -->
-            <div class="field-group hidden" id="f-custom-days-group">
-              <label for="f-custom-days">Custom Plan Duration (Days) *</label>
-              <input type="number" id="f-custom-days" min="1" max="3650" placeholder="e.g. 20, 45, 1" />
-            </div>
-
-            <div class="field-group">
-              <label for="f-start-date">Plan Start Date *</label>
-              <input type="date" id="f-start-date" required />
-            </div>
-            <div class="field-group">
-              <label for="f-end-date">Calculated End Date</label>
-              <input type="date" id="f-end-date" required readonly class="readonly-field" />
-            </div>
-            <div class="field-group">
-              <label for="f-paid">Amount Paid (₹) *</label>
-              <input type="number" id="f-paid" required placeholder="1500" />
-            </div>
-            <div class="field-group">
-              <label for="f-due">Total Due Amount (₹)</label>
-              <input type="number" id="f-due" value="0" placeholder="0" />
-            </div>
-            <div class="field-group">
-              <label for="f-mode">Payment Mode</label>
-              <select id="f-mode">
-                <option value="UPI">UPI / QR</option>
-                <option value="Cash">Cash</option>
-                <option value="Card">Card</option>
-              </select>
-            </div>
-            <div class="field-group span-2">
-              <label for="f-notes">Transaction Notes</label>
-              <input type="text" id="f-notes" placeholder="e.g. Initial admission & registration" />
-            </div>
-            <div class="span-2 mt-4">
-              <button type="submit" id="btn-save-member" class="btn btn-primary">Save Member & Record Transaction</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </main>
-
     <!-- 4. Owner Renewal Modal -->
     <div id="renew-modal" class="modal-backdrop hidden">
       <div class="card modal-box">
@@ -281,11 +283,19 @@
           <div class="field-group span-2">
             <label for="r-plan">Select New Plan *</label>
             <select id="r-plan">
-              <option value="1 Month Basic" data-days="30">1 Month Basic (30 Days)</option>
-              <option value="3 Month Pro" data-days="90">3 Month Pro (90 Days)</option>
-              <option value="6 Month Pro" data-days="180">6 Month Pro (180 Days)</option>
-              <option value="1 Year VIP" data-days="365">1 Year VIP (365 Days)</option>
-              <option value="Custom Plan" data-days="custom">Custom Plan</option>
+              <optgroup label="Without Treadmill">
+                <option value="1 Month (Without Treadmill)" data-days="30" data-price="1200">1 Month - ₹1,200 (30 Days)</option>
+                <option value="3 Month (Without Treadmill)" data-days="90" data-price="3000">3 Month - ₹3,000 (90 Days)</option>
+                <option value="6 Month (Without Treadmill)" data-days="180" data-price="5500">6 Month - ₹5,500 (180 Days)</option>
+                <option value="12 Month (Without Treadmill)" data-days="365" data-price="10000">12 Month - ₹10,000 (365 Days)</option>
+              </optgroup>
+              <optgroup label="With Treadmill">
+                <option value="1 Month (With Treadmill)" data-days="30" data-price="1500">1 Month - ₹1,500 (30 Days)</option>
+                <option value="3 Month (With Treadmill)" data-days="90" data-price="4000">3 Month - ₹4,000 (90 Days)</option>
+                <option value="6 Month (With Treadmill)" data-days="180" data-price="7500">6 Month - ₹7,500 (180 Days)</option>
+                <option value="12 Month (With Treadmill)" data-days="365" data-price="14000">12 Month - ₹14,000 (365 Days)</option>
+              </optgroup>
+              <option value="Custom Plan" data-days="custom" data-price="0">Custom Plan</option>
             </select>
           </div>
           
@@ -304,7 +314,7 @@
           </div>
           <div class="field-group">
             <label for="r-paid">Amount Paid (₹) *</label>
-            <input type="number" id="r-paid" required placeholder="e.g. 1500" />
+            <input type="number" id="r-paid" required placeholder="e.g. 1200" />
           </div>
           <div class="field-group">
             <label for="r-due">Remaining Due (₹)</label>
@@ -320,6 +330,61 @@
           </div>
           <div class="span-2 mt-4">
             <button type="submit" id="btn-submit-renew" class="btn btn-primary">Confirm Renewal & Activate Plan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Plan Prices Modal -->
+    <div id="plan-editor-modal" class="modal-backdrop hidden">
+      <div class="card modal-box" style="max-width: 450px;">
+        <div class="section-title-row">
+          <div>
+            <h3>Manage Gym Plan Prices</h3>
+            <p class="text-subtle">Update pricing reflected across all portals</p>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="closePlanEditorModal()">✕</button>
+        </div>
+
+        <form id="plan-editor-form" class="admission-grid mt-4" onsubmit="handlePlanPricesSubmit(event)">
+          <div class="field-group span-2"><strong style="font-size:11px; color:var(--primary);">WITHOUT TREADMILL</strong></div>
+          <div class="field-group">
+            <label>1 Month (₹)</label>
+            <input type="number" id="ep-1m-no" required />
+          </div>
+          <div class="field-group">
+            <label>3 Month (₹)</label>
+            <input type="number" id="ep-3m-no" required />
+          </div>
+          <div class="field-group">
+            <label>6 Month (₹)</label>
+            <input type="number" id="ep-6m-no" required />
+          </div>
+          <div class="field-group">
+            <label>12 Month (₹)</label>
+            <input type="number" id="ep-12m-no" required />
+          </div>
+
+          <div class="field-group span-2 mt-2"><strong style="font-size:11px; color:var(--primary);">WITH TREADMILL</strong></div>
+          <div class="field-group">
+            <label>1 Month (₹)</label>
+            <input type="number" id="ep-1m-yes" required />
+          </div>
+          <div class="field-group">
+            <label>3 Month (₹)</label>
+            <input type="number" id="ep-3m-yes" required />
+          </div>
+          <div class="field-group">
+            <label>6 Month (₹)</label>
+            <input type="number" id="ep-6m-yes" required />
+          </div>
+          <div class="field-group">
+            <label>12 Month (₹)</label>
+            <input type="number" id="ep-12m-yes" required />
+          </div>
+
+          <div class="span-2 mt-4">
+            <button type="submit" class="btn btn-primary" id="btn-save-prices">Save & Sync Prices</button>
           </div>
         </form>
       </div>
