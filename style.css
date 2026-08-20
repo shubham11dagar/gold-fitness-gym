@@ -780,10 +780,10 @@ input:focus, select:focus {
   to { transform: rotate(360deg); }
 }
 
-/* Toast Notification */
+/* Toast Notification positioned at the bottom */
 #toast {
   position: fixed;
-  top: 1.25rem;
+  bottom: 1.5rem; /* Changed from top to bottom */
   left: 50%;
   transform: translateX(-50%);
   background: var(--surface);
@@ -805,10 +805,9 @@ input:focus, select:focus {
 
 #toast.hidden {
   opacity: 0;
-  transform: translate(-50%, -20px);
+  transform: translate(-50%, 20px); /* Slides up from bottom when appearing */
   pointer-events: none;
 }
-
 .hidden { display: none !important; }
 
 /* Compact Single Stats Bar */
