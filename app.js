@@ -108,13 +108,16 @@ function checkOwnerAutoLogin() {
   }
 }
 
-function handleOwnerExit() {
+async function promptOwnerExit() {
   dismissMobileKeyboard();
-  clearOwnerSession();
-  const pinInput = document.getElementById("input-owner-pin");
-  if (pinInput) pinInput.value = "";
-  switchView("auth", true);
-  showToast("Owner session closed");
+  const confirmed = await showCustomConfirm("Are you sure you want to log out of the owner console?", "Log Out Confirmation", "#3b82f6");
+  if (confirmed) {
+    clearOwnerSession();
+    const pinInput = document.getElementById("input-owner-pin");
+    if (pinInput) pinInput.value = "";
+    switchView("auth", true);
+    showToast("Owner session closed successfully");
+  }
 }
 
 function inspectMemberCard(memberId) {
@@ -231,14 +234,18 @@ function showToast(msg, isError = false) {
   setTimeout(() => toast.classList.add("hidden"), 3500);
 }
 
-function showCustomConfirm(message) {
+function showCustomConfirm(messageHTML, title = "Delete Member", confirmColor = "#e11d48") {
   return new Promise((resolve) => {
     const modal = document.getElementById("custom-alert-modal");
+    const titleEl = document.getElementById("custom-alert-title");
     const msgEl = document.getElementById("custom-alert-msg");
     const confirmBtn = document.getElementById("custom-alert-confirm");
     const cancelBtn = document.getElementById("custom-alert-cancel");
 
-    msgEl.innerText = message;
+    if (titleEl) titleEl.innerText = title;
+    if (msgEl) msgEl.innerHTML = messageHTML;
+    if (confirmBtn) confirmBtn.style.background = confirmColor;
+
     modal.classList.remove("hidden");
 
     function cleanup(result) {
@@ -648,7 +655,7 @@ async function fetchData(silent = false) {
   }
 }
 
-// --- COMPACT PLAN DISPLAY FORMATTER ---
+// --- COMPACT OWNER TABLE PLAN FORMATTER ---
 function formatPlanDisplay(rawPlan) {
   if (!rawPlan) return "Standard";
   const str = String(rawPlan).trim();
@@ -823,7 +830,7 @@ function renderMember() {
   document.getElementById("m-member-name").innerText = member.Full_Name;
   document.getElementById("m-member-sub").innerText = `Member ID: ${member.Member_ID}`;
   
-  // Displays the full, actual plan name directly from the database record
+  // Renders the full unabbreviated plan name
   document.getElementById("m-plan-badge").innerText = member.Plan_Name || "Membership";
   document.getElementById("m-days-number").innerText = Math.max(0, days);
   
@@ -960,7 +967,9 @@ async function handleRenewSubmit(e) {
 }
 
 async function deleteMember(memberId, fullName) {
-  const confirmed = await showCustomConfirm(`Are you sure you want to delete ${fullName} (ID: ${memberId}) from gym records?`);
+  const confirmMsg = `Are you sure you want to delete <strong>${fullName}</strong> (ID: <strong>${memberId}</strong>) from gym records?`;
+  
+  const confirmed = await showCustomConfirm(confirmMsg, "Delete Member", "#e11d48");
   if (!confirmed) return;
 
   showSpinner(`Deleting ${fullName}...`);
