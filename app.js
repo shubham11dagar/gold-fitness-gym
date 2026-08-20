@@ -1,25 +1,10 @@
 /* ==========================================================================
-   GOLD FITNESS GYM - COMPLETE CLIENT ENGINE
-   - Mobile Keyboard Auto-Dismiss: Calls blur() on Enter, Go, and Form Submits
-   - Custom Plan Support: Full manual day input (e.g. 1, 20, 45 days)
-   - Original Classic Theme Toggle: Restored with '🌓'
-   - Full Admission Performa: Plan, Start/End Dates, Dues, Paid, Notes
-   - Merged Phone / Member ID: Phone number is stored as primary Member_ID
-   - Dual-Mode Member Card: Allows Owner to inspect full card with "← Back"
-   - Date Format: D Mon YYYY (e.g. 16 Aug 2026)
-   - Owner Security: PIN verified in Google Sheets 'Admin' tab with progressive lockout
-   - Persistent Sessions: 15-day sliding inactivity auto-login for Owner & Members
-   - Custom Promise Alert: Universal deletion confirmation modal for Mobile & PC
+   GOLD FITNESS GYM - OWNER CONTROLLER ENGINE (PRIVATE)
    ========================================================================== */
 
 const CONFIG = {
   apiUrl: "https://script.google.com/macros/s/AKfycbzPl-XV9RlJU4XVEa5HaTOsK_aPaMp3QSf449ir-MDHjW1svy_H3iHERKTi6sgbBYrINA/exec",
   pollInterval: 8000
-};
-
-const SESSION_CONFIG = {
-  storageKey: "gym_member_session",
-  inactivityLimitMs: 15 * 24 * 60 * 60 * 1000 // 15 Days
 };
 
 const OWNER_SESSION_CONFIG = {
@@ -38,12 +23,22 @@ const LOCKOUT_CONFIG = {
   }
 };
 
+let GymPlans = {
+  "1 Month (Without Treadmill)": 1200,
+  "3 Month (Without Treadmill)": 3000,
+  "6 Month (Without Treadmill)": 5500,
+  "12 Month (Without Treadmill)": 10000,
+  "1 Month (With Treadmill)": 1500,
+  "3 Month (With Treadmill)": 4000,
+  "6 Month (With Treadmill)": 7500,
+  "12 Month (With Treadmill)": 14000
+};
+
 const State = {
   theme: localStorage.getItem("gym_theme") || "system",
   activeView: "auth",
   ownerTab: "all",
   isOwnerAuthenticated: false,
-  isOwnerInspecting: false,
   members: [],
   transactions: [],
   activeIdentifier: null,
@@ -52,14 +47,12 @@ const State = {
   lockoutInterval: null
 };
 
-// --- MOBILE KEYBOARD DISMISSAL HELPER ---
 function dismissMobileKeyboard() {
   if (document.activeElement && typeof document.activeElement.blur === "function") {
     document.activeElement.blur();
   }
 }
 
-// --- INITIALIZATION ---
 document.addEventListener("DOMContentLoaded", () => {
   setupTheme();
   setupEvents();
@@ -67,19 +60,12 @@ document.addEventListener("DOMContentLoaded", () => {
   startSync();
   checkLockoutStatus();
 
-  // 1. Check Owner auto-login
   const isOwnerLoggedIn = checkOwnerAutoLogin();
-  if (isOwnerLoggedIn) return;
-
-  // 2. Check Member auto-login
-  const isMemberLoggedIn = checkAutoLogin();
-  if (!isMemberLoggedIn) {
-    resetAuthTabsToMember();
+  if (!isOwnerLoggedIn) {
     switchView("auth", true);
   }
 });
 
-// --- OWNER 15-DAY INACTIVITY SESSION ---
 function saveOwnerSession() {
   localStorage.setItem(OWNER_SESSION_CONFIG.storageKey, JSON.stringify({ authenticated: true, lastActive: Date.now() }));
   State.isOwnerAuthenticated = true;
@@ -100,7 +86,6 @@ function touchOwnerSession() {
 function clearOwnerSession() {
   localStorage.removeItem(OWNER_SESSION_CONFIG.storageKey);
   State.isOwnerAuthenticated = false;
-  State.isOwnerInspecting = false;
 }
 
 function checkOwnerAutoLogin() {
@@ -128,79 +113,21 @@ function handleOwnerExit() {
   clearOwnerSession();
   const pinInput = document.getElementById("input-owner-pin");
   if (pinInput) pinInput.value = "";
-  resetAuthTabsToMember();
   switchView("auth", true);
   showToast("Owner session closed");
 }
 
-// --- MEMBER 15-DAY INACTIVITY SESSION ---
-function saveMemberSession(identifier) {
-  localStorage.setItem(SESSION_CONFIG.storageKey, JSON.stringify({ identifier: identifier, lastActive: Date.now() }));
-}
-
-function touchMemberSession() {
-  const raw = localStorage.getItem(SESSION_CONFIG.storageKey);
-  if (!raw) return;
-  try {
-    const session = JSON.parse(raw);
-    session.lastActive = Date.now();
-    localStorage.setItem(SESSION_CONFIG.storageKey, JSON.stringify(session));
-  } catch (e) {
-    localStorage.removeItem(SESSION_CONFIG.storageKey);
-  }
-}
-
-function clearMemberSession() {
-  localStorage.removeItem(SESSION_CONFIG.storageKey);
-  State.activeIdentifier = null;
-}
-
-function checkAutoLogin() {
-  const raw = localStorage.getItem(SESSION_CONFIG.storageKey);
-  if (!raw) return false;
-  try {
-    const session = JSON.parse(raw);
-    if (Date.now() - session.lastActive > SESSION_CONFIG.inactivityLimitMs) {
-      clearMemberSession();
-      showToast("Session expired after 15 days of inactivity.", true);
-      return false;
-    }
-    touchMemberSession();
-    State.activeIdentifier = session.identifier;
-    State.isOwnerInspecting = false;
-    switchView("member", false);
-    return true;
-  } catch (e) {
-    clearMemberSession();
-    return false;
-  }
-}
-
-function handleMemberLogout() {
-  dismissMobileKeyboard();
-  clearMemberSession();
-  const loginInput = document.getElementById("input-member-phone");
-  if (loginInput) loginInput.value = "";
-  resetAuthTabsToMember();
-  switchView("auth", true);
-  showToast("Logged out successfully");
-}
-
-// --- OWNER ROW-INSPECTION NAVIGATION ---
 function inspectMemberCard(memberId) {
   dismissMobileKeyboard();
-  State.isOwnerInspecting = true;
   State.activeIdentifier = memberId;
   switchView("member", true);
 }
 
 function returnToOwnerHub() {
   dismissMobileKeyboard();
-  State.isOwnerInspecting = false;
   switchView("owner", true);
 }
 
-// --- OWNER SECURITY LOCKOUT ENGINE ---
 function getLockoutData() {
   const raw = localStorage.getItem(LOCKOUT_CONFIG.storageKey);
   if (!raw) return { failedAttempts: 0, lockedUntil: 0 };
@@ -273,21 +200,6 @@ function renderLockoutUI(isLocked, secondsLeft = 0) {
   }
 }
 
-function resetAuthTabsToMember() {
-  const tabMember = document.getElementById("tab-member");
-  const tabOwner = document.getElementById("tab-owner");
-  const paneMember = document.getElementById("auth-member-pane");
-  const paneOwner = document.getElementById("auth-owner-pane");
-
-  if (tabMember && tabOwner && paneMember && paneOwner) {
-    tabMember.classList.add("active");
-    tabOwner.classList.remove("active");
-    paneMember.classList.remove("hidden");
-    paneOwner.classList.add("hidden");
-  }
-}
-
-// --- DATE FORMATTER UTILITY ---
 function formatDate(dateInput, includeYear = true) {
   if (!dateInput) return "--";
   const d = new Date(dateInput);
@@ -298,7 +210,6 @@ function formatDate(dateInput, includeYear = true) {
   return includeYear ? `${day} ${month} ${d.getFullYear()}` : `${day} ${month}`;
 }
 
-// --- SPINNER & TOAST UTILITIES ---
 function showSpinner(text = "Syncing with Google Sheets...") {
   const spinner = document.getElementById("loading-spinner");
   const spinnerText = document.getElementById("spinner-text");
@@ -320,7 +231,6 @@ function showToast(msg, isError = false) {
   setTimeout(() => toast.classList.add("hidden"), 3500);
 }
 
-// --- CUSTOM ALERT / CONFIRM MODAL (Universal Phone & PC) ---
 function showCustomConfirm(message) {
   return new Promise((resolve) => {
     const modal = document.getElementById("custom-alert-modal");
@@ -346,7 +256,6 @@ function showCustomConfirm(message) {
   });
 }
 
-// --- THEME ENGINE ---
 function setupTheme() {
   const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
   const current = State.theme === "system" ? (isDark ? "dark" : "light") : State.theme;
@@ -360,12 +269,10 @@ function setupTheme() {
       State.theme = next;
       localStorage.setItem("gym_theme", next);
       document.documentElement.setAttribute("data-theme", next);
-      // showToast removed here for seamless instant theme switching
     });
   }
 }
 
-// --- VIEW NAVIGATION ---
 function switchView(viewName, skipFetch = false) {
   State.activeView = viewName;
   document.querySelectorAll(".panel").forEach(p => p.classList.add("hidden"));
@@ -398,6 +305,8 @@ function setOwnerTab(tab) {
   if (tab === "add") {
     if (tableView) tableView.classList.add("hidden");
     if (formView) formView.classList.remove("hidden");
+    onPlanSelectionChange("f-plan", "f-paid", "f-custom-days-group");
+    calcEndDate();
   } else {
     if (tableView) tableView.classList.remove("hidden");
     if (formView) formView.classList.add("hidden");
@@ -405,57 +314,139 @@ function setOwnerTab(tab) {
   }
 }
 
-// --- EVENT BINDINGS & LISTENERS ---
-function setupEvents() {
-  const tabMember = document.getElementById("tab-member");
-  const tabOwner = document.getElementById("tab-owner");
-  const paneMember = document.getElementById("auth-member-pane");
-  const paneOwner = document.getElementById("auth-owner-pane");
+// --- PLAN SELECTION & PRICE AUTO-FILL ENGINE ---
+function onPlanSelectionChange(selectId, paidInputId, customGroupId) {
+  const planSelect = document.getElementById(selectId);
+  const paidInput = document.getElementById(paidInputId);
+  const customGroup = document.getElementById(customGroupId);
+  
+  if (!planSelect) return;
 
-  const pinInput = document.getElementById("input-owner-pin");
-  if (pinInput) {
-    pinInput.addEventListener("focus", () => {
-      setTimeout(() => {
-        const unlockBtn = document.getElementById("btn-login-owner");
-        if (unlockBtn) {
-          unlockBtn.scrollIntoView({ behavior: "smooth", block: "center" });
+  const selectedOpt = planSelect.options[planSelect.selectedIndex];
+  if (!selectedOpt) return;
+
+  if (planSelect.value === "Custom Plan") {
+    if (customGroup) customGroup.classList.remove("hidden");
+  } else {
+    if (customGroup) customGroup.classList.add("hidden");
+  }
+
+  const defaultPrice = selectedOpt.getAttribute("data-price");
+  if (paidInput && defaultPrice !== null && defaultPrice !== "0") {
+    paidInput.value = defaultPrice;
+  }
+}
+
+async function openPlanEditorModal() {
+  dismissMobileKeyboard();
+  showSpinner("Fetching latest plan prices from database...");
+
+  try {
+    const res = await fetch(`${CONFIG.apiUrl}?action=getAllData`);
+    const data = await res.json();
+    
+    if (data.status === "success" && data.plans) {
+      GymPlans = data.plans;
+      updateDropdownDataAttributes();
+    }
+  } catch (err) {
+    showToast("Could not refresh prices from cloud. Using cached values.", true);
+  } finally {
+    hideSpinner();
+  }
+
+  document.getElementById("ep-1m-no").value = GymPlans["1 Month (Without Treadmill)"] || 1200;
+  document.getElementById("ep-3m-no").value = GymPlans["3 Month (Without Treadmill)"] || 3000;
+  document.getElementById("ep-6m-no").value = GymPlans["6 Month (Without Treadmill)"] || 5500;
+  document.getElementById("ep-12m-no").value = GymPlans["12 Month (Without Treadmill)"] || 10000;
+
+  document.getElementById("ep-1m-yes").value = GymPlans["1 Month (With Treadmill)"] || 1500;
+  document.getElementById("ep-3m-yes").value = GymPlans["3 Month (With Treadmill)"] || 4000;
+  document.getElementById("ep-6m-yes").value = GymPlans["6 Month (With Treadmill)"] || 7500;
+  document.getElementById("ep-12m-yes").value = GymPlans["12 Month (With Treadmill)"] || 14000;
+
+  document.getElementById("plan-editor-modal").classList.remove("hidden");
+}
+
+function closePlanEditorModal() {
+  dismissMobileKeyboard();
+  document.getElementById("plan-editor-modal")?.classList.add("hidden");
+}
+
+async function handlePlanPricesSubmit(e) {
+  e.preventDefault();
+  dismissMobileKeyboard();
+
+  const btn = document.getElementById("btn-save-prices");
+  btn.disabled = true;
+  showSpinner("Updating plan prices to cloud...");
+
+  const newPrices = {
+    "1 Month (Without Treadmill)": Number(document.getElementById("ep-1m-no").value),
+    "3 Month (Without Treadmill)": Number(document.getElementById("ep-3m-no").value),
+    "6 Month (Without Treadmill)": Number(document.getElementById("ep-6m-no").value),
+    "12 Month (Without Treadmill)": Number(document.getElementById("ep-12m-no").value),
+    "1 Month (With Treadmill)": Number(document.getElementById("ep-1m-yes").value),
+    "3 Month (With Treadmill)": Number(document.getElementById("ep-3m-yes").value),
+    "6 Month (With Treadmill)": Number(document.getElementById("ep-6m-yes").value),
+    "12 Month (With Treadmill)": Number(document.getElementById("ep-12m-yes").value)
+  };
+
+  try {
+    const res = await fetch(CONFIG.apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "updatePlanPrices", prices: newPrices })
+    });
+    const result = await res.json();
+
+    if (result.status === "success") {
+      GymPlans = newPrices;
+      updateDropdownDataAttributes();
+      showToast("Plan prices updated successfully!");
+      closePlanEditorModal();
+    } else {
+      showToast(result.message || "Failed to update prices", true);
+    }
+  } catch (err) {
+    showToast("Network error updating prices.", true);
+  } finally {
+    btn.disabled = false;
+    hideSpinner();
+  }
+}
+
+function updateDropdownDataAttributes() {
+  ["f-plan", "r-plan"].forEach(selectId => {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+    
+    for (let i = 0; i < select.options.length; i++) {
+      const opt = select.options[i];
+      const val = opt.value;
+      
+      if (GymPlans[val] !== undefined) {
+        const livePrice = GymPlans[val];
+        opt.setAttribute("data-price", livePrice);
+
+        if (val.includes("1 Month")) {
+          opt.innerText = `1 Month - ₹${livePrice.toLocaleString()}`;
+        } else if (val.includes("3 Month")) {
+          opt.innerText = `3 Month - ₹${livePrice.toLocaleString()}`;
+        } else if (val.includes("6 Month")) {
+          opt.innerText = `6 Month - ₹${livePrice.toLocaleString()}`;
+        } else if (val.includes("12 Month")) {
+          opt.innerText = `12 Month - ₹${livePrice.toLocaleString()}`;
         }
-      }, 300);
-    });
-
-    pinInput.addEventListener("blur", () => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    });
-  }
-
-  if (tabMember && tabOwner) {
-    tabMember.addEventListener("click", () => {
-      tabMember.classList.add("active");
-      tabOwner.classList.remove("active");
-      if (paneMember) paneMember.classList.remove("hidden");
-      if (paneOwner) paneOwner.classList.add("hidden");
-    });
-
-    tabOwner.addEventListener("click", () => {
-      tabOwner.classList.add("active");
-      tabMember.classList.remove("active");
-      if (paneOwner) paneOwner.classList.remove("hidden");
-      if (paneMember) paneMember.classList.add("hidden");
-      checkLockoutStatus();
-      document.getElementById("input-owner-pin")?.focus();
-    });
-  }
-
-  // Member Login
-  document.getElementById("btn-login-member")?.addEventListener("click", handleMemberLogin);
-  document.getElementById("input-member-phone")?.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") {
-      dismissMobileKeyboard();
-      handleMemberLogin();
+      }
     }
   });
 
-  // Owner PIN Login
+  onPlanSelectionChange("f-plan", "f-paid", "f-custom-days-group");
+  onPlanSelectionChange("r-plan", "r-paid", "r-custom-days-group");
+}
+
+function setupEvents() {
   document.getElementById("btn-login-owner")?.addEventListener("click", handleOwnerPinLogin);
   document.getElementById("input-owner-pin")?.addEventListener("keypress", (e) => {
     if (e.key === "Enter") {
@@ -464,16 +455,12 @@ function setupEvents() {
     }
   });
 
-  // Global Input Enter Key Listener to Hide Mobile Keyboard
   document.querySelectorAll("input").forEach(input => {
     input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        dismissMobileKeyboard();
-      }
+      if (e.key === "Enter") dismissMobileKeyboard();
     });
   });
 
-  // Owner Controls
   document.getElementById("btn-refresh")?.addEventListener("click", () => {
     dismissMobileKeyboard();
     fetchData(false);
@@ -481,32 +468,29 @@ function setupEvents() {
   document.getElementById("owner-search")?.addEventListener("input", renderOwner);
 
   window.addEventListener("click", () => {
-    if (State.activeView === "owner" || State.isOwnerInspecting) touchOwnerSession();
-    if (State.activeView === "member" && !State.isOwnerInspecting) touchMemberSession();
+    if (State.activeView === "owner" || State.activeView === "member") touchOwnerSession();
   });
 
-  // Admission Date & Custom Plan Listeners
   const fStartDate = document.getElementById("f-start-date");
   const fPlan = document.getElementById("f-plan");
   const fCustomDays = document.getElementById("f-custom-days");
 
   if (fStartDate) fStartDate.addEventListener("change", calcEndDate);
   if (fPlan) fPlan.addEventListener("change", () => {
-    toggleCustomDaysInput("f-plan", "f-custom-days-group");
+    onPlanSelectionChange("f-plan", "f-paid", "f-custom-days-group");
     calcEndDate();
   });
   if (fCustomDays) fCustomDays.addEventListener("input", calcEndDate);
 
   document.getElementById("admission-form")?.addEventListener("submit", handleAdmission);
 
-  // Renewal Dates & Custom Plan Listeners
   const rStartDate = document.getElementById("r-start-date");
   const rPlan = document.getElementById("r-plan");
   const rCustomDays = document.getElementById("r-custom-days");
 
   if (rStartDate) rStartDate.addEventListener("change", calcRenewEndDate);
   if (rPlan) rPlan.addEventListener("change", () => {
-    toggleCustomDaysInput("r-plan", "r-custom-days-group");
+    onPlanSelectionChange("r-plan", "r-paid", "r-custom-days-group");
     calcRenewEndDate();
   });
   if (rCustomDays) rCustomDays.addEventListener("input", calcRenewEndDate);
@@ -514,14 +498,13 @@ function setupEvents() {
   document.getElementById("renew-form")?.addEventListener("submit", handleRenewSubmit);
 }
 
-// --- SECURE OWNER PIN VERIFICATION ---
 async function handleOwnerPinLogin() {
   dismissMobileKeyboard();
   if (checkLockoutStatus()) return showToast("Account temporarily locked. Please wait.", true);
 
   const pinInput = document.getElementById("input-owner-pin");
   const enteredPin = (pinInput?.value || "").trim();
-  if (!enteredPin) return showToast("Please enter the owner security PIN.", true);
+  if (!enteredPin) return showToast("Please enter the master security PIN.", true);
 
   showSpinner("Verifying PIN & loading dashboard...");
 
@@ -559,57 +542,18 @@ async function handleOwnerPinLogin() {
   }
 }
 
-// --- MEMBER LOGIN ---
-async function handleMemberLogin() {
-  dismissMobileKeyboard();
-  const inputVal = document.getElementById("input-member-phone").value.trim();
-  if (!inputVal) return showToast("Please enter Phone Number or Member ID", true);
-
-  showSpinner("Verifying gym membership...");
-  await fetchData(true);
-  hideSpinner();
-
-  const member = State.members.find(m => 
-    String(m.Member_ID).trim().toLowerCase() === inputVal.toLowerCase()
-  );
-
-  if (!member) {
-    showToast("User is not registered as a gym member.", true);
-    return;
-  }
-
-  State.isOwnerInspecting = false;
-  State.activeIdentifier = inputVal;
-  saveMemberSession(inputVal);
-  showToast(`Welcome back, ${member.Full_Name || "Member"}!`);
-  switchView("member", true);
-}
-
-// --- DYNAMIC CUSTOM PLAN DAYS TOGGLE & CALCULATIONS ---
-function toggleCustomDaysInput(selectId, groupId) {
-  const select = document.getElementById(selectId);
-  const group = document.getElementById(groupId);
-  if (select && group) {
-    if (select.value === "Custom Plan") {
-      group.classList.remove("hidden");
-    } else {
-      group.classList.add("hidden");
-    }
-  }
-}
-
 function initDates() {
   const today = new Date().toISOString().split("T")[0];
   const fStartDate = document.getElementById("f-start-date");
   if (fStartDate) {
     fStartDate.value = today;
+    onPlanSelectionChange("f-plan", "f-paid", "f-custom-days-group");
     calcEndDate();
   }
 }
 
 function computeEndDate(startDateStr, planVal, customDaysVal) {
   if (!startDateStr) return "";
-  
   const parts = startDateStr.split("-");
   const year = parseInt(parts[0], 10);
   const month = parseInt(parts[1], 10) - 1;
@@ -617,13 +561,13 @@ function computeEndDate(startDateStr, planVal, customDaysVal) {
 
   let targetDate;
 
-  if (planVal === "1 Month Basic") {
+  if (planVal.includes("1 Month")) {
     targetDate = new Date(year, month + 1, day - 1);
-  } else if (planVal === "3 Month Pro") {
+  } else if (planVal.includes("3 Month")) {
     targetDate = new Date(year, month + 3, day - 1);
-  } else if (planVal === "6 Month Pro") {
+  } else if (planVal.includes("6 Month")) {
     targetDate = new Date(year, month + 6, day - 1);
-  } else if (planVal === "1 Year VIP") {
+  } else if (planVal.includes("12 Month") || planVal.includes("1 Year")) {
     targetDate = new Date(year + 1, month, day - 1);
   } else if (planVal === "Custom Plan") {
     const days = parseInt(customDaysVal, 10) || 1;
@@ -644,9 +588,7 @@ function calcEndDate() {
   const customDays = document.getElementById("f-custom-days")?.value;
   
   const calculated = computeEndDate(startStr, planSelect.value, customDays);
-  if (calculated) {
-    document.getElementById("f-end-date").value = calculated;
-  }
+  if (calculated) document.getElementById("f-end-date").value = calculated;
 }
 
 function calcRenewEndDate() {
@@ -655,14 +597,11 @@ function calcRenewEndDate() {
   const customDays = document.getElementById("r-custom-days")?.value;
 
   const calculated = computeEndDate(startStr, planSelect.value, customDays);
-  if (calculated) {
-    document.getElementById("r-end-date").value = calculated;
-  }
+  if (calculated) document.getElementById("r-end-date").value = calculated;
 }
 
 function getDaysRemaining(endDateStr) {
   if (!endDateStr) return 0;
-  
   const parts = String(endDateStr).split("T")[0].split("-");
   if (parts.length < 3) return 0;
 
@@ -673,14 +612,9 @@ function getDaysRemaining(endDateStr) {
   const diffMs = target.getTime() - now.getTime();
   const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffDays >= 0) {
-    return diffDays + 1; 
-  } else {
-    return diffDays;
-  }
+  return diffDays >= 0 ? diffDays + 1 : diffDays;
 }
 
-// --- REAL-TIME SYNC ---
 function startSync() {
   if (State.timer) clearInterval(State.timer);
   State.timer = setInterval(() => {
@@ -699,6 +633,10 @@ async function fetchData(silent = false) {
     const data = await res.json();
     State.members = data.members || [];
     State.transactions = data.transactions || [];
+    if (data.plans) {
+      GymPlans = data.plans;
+      updateDropdownDataAttributes();
+    }
 
     if (State.activeView === "owner") renderOwner();
     if (State.activeView === "member") renderMember();
@@ -710,7 +648,21 @@ async function fetchData(silent = false) {
   }
 }
 
-// --- OWNER DASHBOARD (6-COLUMN LAYOUT) ---
+// --- COMPACT PLAN DISPLAY FORMATTER ---
+function formatPlanDisplay(rawPlan) {
+  if (!rawPlan) return "Standard";
+  const str = String(rawPlan).trim();
+  const isTreadmill = /with treadmill/i.test(str) || /\bT\b/i.test(str);
+
+  let baseName = str
+    .replace(/\s*\((With|Without)\s*Treadmill\)/i, "")
+    .replace(/\s*(With|Without)\s*Treadmill/i, "")
+    .replace(/Basic|Pro|VIP/i, "")
+    .trim();
+
+  return isTreadmill ? `${baseName} (T)` : baseName;
+}
+
 function renderOwner() {
   const tbody = document.getElementById("owner-member-rows");
   const query = (document.getElementById("owner-search")?.value || "").trim().toLowerCase();
@@ -734,14 +686,12 @@ function renderOwner() {
 
   let list = [...State.members].reverse();
 
-  // Tab Filtering
   if (State.ownerTab === "expiring") {
     list = list.filter(m => getDaysRemaining(m.Plan_End_Date) <= 7);
   } else if (State.ownerTab === "dues") {
     list = list.filter(m => Number(m.Total_Due_Amount || 0) > 0);
   }
 
-  // Search Filter (Name or Member ID / Phone)
   list = list.filter(m => {
     const nameMatch = String(m.Full_Name || "").toLowerCase().includes(query);
     const idMatch = String(m.Member_ID || "").toLowerCase().includes(query);
@@ -777,8 +727,6 @@ function renderOwner() {
 
     const safeName = String(m.Full_Name || "Unnamed").replace(/'/g, "\\'");
 
-    // 6 Columns: 1. Status | 2. Member ID / Name | 3. Start Date | 4. Plan | 5. Total Due | 6. Actions
-    // Render clean, single-line table row (First 3 cells clickable)
     tr.innerHTML = `
       <td class="clickable-cell" onclick="inspectMemberCard('${m.Member_ID}')" title="Click to view member dashboard">
         <span class="badge ${badgeClass}">${statusText}</span>
@@ -790,7 +738,7 @@ function renderOwner() {
         <span>${formatDate(m.Plan_Start_Date, false)}</span>
       </td>
       <td>
-        <span style="color: var(--text-main); font-weight: 500;">${m.Plan_Name || "Standard"}</span>
+        <span style="color: var(--text-main); font-weight: 600;">${formatPlanDisplay(m.Plan_Name)}</span>
       </td>
       <td class="${dueAmount > 0 ? 'text-warning font-bold' : 'text-subtle'}">
         ₹${dueAmount.toLocaleString()}
@@ -806,7 +754,6 @@ function renderOwner() {
   });
 }
 
-// --- ADMISSION SUBMISSION ---
 async function handleAdmission(e) {
   e.preventDefault();
   dismissMobileKeyboard();
@@ -849,7 +796,6 @@ async function handleAdmission(e) {
       const idNotice = phoneOrId ? "" : ` (Assigned ID: ${result.memberId})`;
       showToast(`Member successfully saved!${idNotice}`);
       document.getElementById("admission-form").reset();
-      toggleCustomDaysInput("f-plan", "f-custom-days-group");
       initDates();
       setOwnerTab("all");
       await fetchData(true);
@@ -865,29 +811,19 @@ async function handleAdmission(e) {
   }
 }
 
-// --- RENDER MEMBER DASHBOARD ---
 function renderMember() {
   const member = State.members.find(m => 
     String(m.Member_ID).trim().toLowerCase() === String(State.activeIdentifier).trim().toLowerCase()
   );
   if (!member) return;
 
-  const btnOwnerBack = document.getElementById("btn-owner-back");
-  const btnMemberLogout = document.getElementById("btn-member-logout");
-
-  if (State.isOwnerInspecting) {
-    if (btnOwnerBack) btnOwnerBack.classList.remove("hidden");
-    if (btnMemberLogout) btnMemberLogout.classList.add("hidden");
-  } else {
-    if (btnOwnerBack) btnOwnerBack.classList.add("hidden");
-    if (btnMemberLogout) btnMemberLogout.classList.remove("hidden");
-  }
-
   const days = getDaysRemaining(member.Plan_End_Date);
   const dues = Number(member.Total_Due_Amount || 0);
 
   document.getElementById("m-member-name").innerText = member.Full_Name;
   document.getElementById("m-member-sub").innerText = `Member ID: ${member.Member_ID}`;
+  
+  // Displays the full, actual plan name directly from the database record
   document.getElementById("m-plan-badge").innerText = member.Plan_Name || "Membership";
   document.getElementById("m-days-number").innerText = Math.max(0, days);
   
@@ -900,7 +836,7 @@ function renderMember() {
 
   if (planName.includes("3 Month")) totalDays = 90;
   else if (planName.includes("6 Month")) totalDays = 180;
-  else if (planName.includes("1 Year")) totalDays = 365;
+  else if (planName.includes("12 Month") || planName.includes("1 Year")) totalDays = 365;
   else if (planName.includes("Custom")) {
     const matched = planName.match(/\d+/);
     totalDays = matched ? parseInt(matched[0], 10) : 30;
@@ -945,7 +881,6 @@ function renderMember() {
   }
 }
 
-// --- OWNER RENEWAL & DELETE ---
 function openRenewModal(memberId) {
   dismissMobileKeyboard();
   const member = State.members.find(m => String(m.Member_ID).trim() === String(memberId).trim());
@@ -957,7 +892,8 @@ function openRenewModal(memberId) {
 
   const today = new Date().toISOString().split("T")[0];
   document.getElementById("r-start-date").value = today;
-  toggleCustomDaysInput("r-plan", "r-custom-days-group");
+  
+  onPlanSelectionChange("r-plan", "r-paid", "r-custom-days-group");
   calcRenewEndDate();
 
   document.getElementById("renew-modal").classList.remove("hidden");
@@ -967,7 +903,7 @@ function closeRenewModal() {
   dismissMobileKeyboard();
   document.getElementById("renew-modal")?.classList.add("hidden");
   document.getElementById("renew-form")?.reset();
-  toggleCustomDaysInput("r-plan", "r-custom-days-group");
+  onPlanSelectionChange("r-plan", "r-paid", "r-custom-days-group");
 }
 
 async function handleRenewSubmit(e) {
