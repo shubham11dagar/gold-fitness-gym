@@ -3,7 +3,7 @@
    ========================================================================== */
 
 const CONFIG = {
-  apiUrl: "https://api.goldfitness.workers.dev",
+  apiUrl: "https://api.goldfitness.workers.dev/",
   pollInterval: 8000
 };
 
