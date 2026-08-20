@@ -9,6 +9,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* Removes the default clear (x) button on search inputs across browsers */
+    input[type="search"]::-webkit-search-cancel-button,
+    input[type="search"]::-webkit-search-decoration,
+    input[type="search"]::-webkit-search-results-button,
+    input[type="search"]::-webkit-search-results-decoration {
+      display: none;
+    }
+  </style>
 </head>
 <body>
 
@@ -59,7 +68,7 @@
           <div class="field-group" style="margin-bottom: 12px;">
             <label for="input-owner-pin">Master Security PIN</label>
             <div class="input-with-icon">
-              <input type="password" id="input-owner-pin" placeholder="Enter owner master PIN" maxlength="20" autocomplete="current-password" />
+              <input type="password" id="input-owner-pin" name="random_owner_auth" placeholder="Enter owner master PIN" maxlength="20" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" />
             </div>
             <!-- In-line error text view slot -->
             <div id="owner-pin-error" style="font-size: 12px; font-weight: 600; color: var(--rose-text); margin-top: 6px;"></div>
@@ -133,7 +142,7 @@
         </div>
 
         <div id="owner-table-view" class="p-4">
-          <input type="text" id="owner-search" class="search-input" placeholder="🔍 Search member..." />
+          <input type="search" id="owner-search" name="random_srch_query" class="search-input" placeholder="🔍 Search member..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
           <div class="table-container">
             <table class="minimal-table">
               <thead>
@@ -156,11 +165,11 @@
           <form id="admission-form" class="admission-grid">
             <div class="field-group">
               <label for="f-name">Full Name *</label>
-              <input type="text" id="f-name" required placeholder="e.g. Rahul Sharma" />
+              <input type="search" id="f-name" name="random_admission_name" required placeholder="e.g. Rahul Sharma" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
             </div>
             <div class="field-group">
               <label for="f-phone">Phone Number / Member ID <span style="font-weight:400; text-transform:none; color:var(--emerald-text);">(Optional)</span></label>
-              <input type="text" id="f-phone" placeholder="Enter phone or leave blank for auto ID" />
+              <input type="search" id="f-phone" name="random_admission_phone" placeholder="Enter phone or leave blank for auto ID" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
             </div>
             <div class="field-group">
               <label for="f-plan">Plan Name *</label>
@@ -183,7 +192,7 @@
             
             <div class="field-group hidden" id="f-custom-days-group">
               <label for="f-custom-days">Custom Plan Duration (Days) *</label>
-              <input type="number" id="f-custom-days" min="1" max="3650" placeholder="e.g. 20, 45, 1" />
+              <input type="search" id="f-custom-days" name="random_cust_days" min="1" max="3650" placeholder="e.g. 20, 45, 1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="numeric" />
             </div>
 
             <div class="field-group">
@@ -196,11 +205,11 @@
             </div>
             <div class="field-group">
               <label for="f-paid">Amount Paid (₹) *</label>
-              <input type="number" id="f-paid" required placeholder="1200" />
+              <input type="search" id="f-paid" name="random_paid_amt" required placeholder="1200" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="numeric" />
             </div>
             <div class="field-group">
               <label for="f-due">Total Due Amount (₹)</label>
-              <input type="number" id="f-due" value="0" placeholder="0" />
+              <input type="search" id="f-due" name="random_due_amt" value="0" placeholder="0" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="numeric" />
             </div>
             <div class="field-group">
               <label for="f-mode">Payment Mode</label>
@@ -212,7 +221,7 @@
             </div>
             <div class="field-group span-2">
               <label for="f-notes">Transaction Notes</label>
-              <input type="text" id="f-notes" placeholder="e.g. Initial admission & registration" />
+              <input type="search" id="f-notes" name="random_tx_notes" placeholder="e.g. Initial admission & registration" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
             </div>
             <div class="span-2 mt-4">
               <button type="submit" id="btn-save-member" class="btn btn-primary">Save Member & Record Transaction</button>
@@ -323,7 +332,7 @@
           
           <div class="field-group span-2 hidden" id="r-custom-days-group">
             <label for="r-custom-days">Custom Plan Duration (Days) *</label>
-            <input type="number" id="r-custom-days" min="1" max="3650" placeholder="e.g. 20, 45, 1" />
+            <input type="search" id="r-custom-days" name="random_r_days" min="1" max="3650" placeholder="e.g. 20, 45, 1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="numeric" />
           </div>
 
           <div class="field-group">
@@ -336,11 +345,11 @@
           </div>
           <div class="field-group">
             <label for="r-paid">Amount Paid (₹) *</label>
-            <input type="number" id="r-paid" required placeholder="e.g. 1200" />
+            <input type="search" id="r-paid" name="random_r_paid" required placeholder="e.g. 1200" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="numeric" />
           </div>
           <div class="field-group">
             <label for="r-due">Remaining Due (₹)</label>
-            <input type="number" id="r-due" value="0" />
+            <input type="search" id="r-due" name="random_r_due" value="0" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="numeric" />
           </div>
           <div class="field-group span-2">
             <label for="r-mode">Payment Mode</label>
@@ -372,37 +381,37 @@
           <div class="field-group span-2"><strong style="font-size:11px; color:var(--primary);">WITHOUT TREADMILL</strong></div>
           <div class="field-group">
             <label>1 Month (₹)</label>
-            <input type="number" id="ep-1m-no" required />
+            <input type="search" id="ep-1m-no" name="random_p1" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="numeric" />
           </div>
           <div class="field-group">
             <label>3 Month (₹)</label>
-            <input type="number" id="ep-3m-no" required />
+            <input type="search" id="ep-3m-no" name="random_p3" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="numeric" />
           </div>
           <div class="field-group">
             <label>6 Month (₹)</label>
-            <input type="number" id="ep-6m-no" required />
+            <input type="search" id="ep-6m-no" name="random_p6" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="numeric" />
           </div>
           <div class="field-group">
             <label>12 Month (₹)</label>
-            <input type="number" id="ep-12m-no" required />
+            <input type="search" id="ep-12m-no" name="random_p12" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="numeric" />
           </div>
 
           <div class="field-group span-2 mt-2"><strong style="font-size:11px; color:var(--primary);">WITH TREADMILL</strong></div>
           <div class="field-group">
             <label>1 Month (₹)</label>
-            <input type="number" id="ep-1m-yes" required />
+            <input type="search" id="ep-1m-yes" name="random_pt1" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="numeric" />
           </div>
           <div class="field-group">
             <label>3 Month (₹)</label>
-            <input type="number" id="ep-3m-yes" required />
+            <input type="search" id="ep-3m-yes" name="random_pt3" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="numeric" />
           </div>
           <div class="field-group">
             <label>6 Month (₹)</label>
-            <input type="number" id="ep-6m-yes" required />
+            <input type="search" id="ep-6m-yes" name="random_pt6" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="numeric" />
           </div>
           <div class="field-group">
             <label>12 Month (₹)</label>
-            <input type="number" id="ep-12m-yes" required />
+            <input type="search" id="ep-12m-yes" name="random_pt12" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="numeric" />
           </div>
 
           <div class="span-2 mt-4">
