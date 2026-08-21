@@ -3,8 +3,7 @@
    ========================================================================== */
 
 const CONFIG = {
-  apiUrl: "https://api.goldfitness.workers.dev",
-  pollInterval: 8000
+  apiUrl: "https://api.goldfitness.workers.dev"
 };
 
 const OWNER_SESSION_CONFIG = {
@@ -43,7 +42,6 @@ const State = {
   transactions: [],
   activeIdentifier: null,
   isFetching: false,
-  timer: null,
   lockoutInterval: null
 };
 
@@ -57,7 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
   setupTheme();
   setupEvents();
   initDates();
-  startSync();
   checkLockoutStatus();
 
   const isOwnerLoggedIn = checkOwnerAutoLogin();
@@ -192,7 +189,7 @@ function renderLockoutUI(isLocked, secondsLeft = 0) {
     if (bannerText) {
       const mins = Math.floor(secondsLeft / 60);
       const secs = secondsLeft % 60;
-      bannerText.innerText = `Too many failed attempts. Locked for ${mins > 0 ? `${mins}m${secs}s` : `${secs}s`}.`;
+      bannerText.innerText = `Too many failed attempts. Locked for ${mins > 0 ? `${mins}m ${secs}s` : `${secs}s`}.`;
     }
     if (pinInput) { pinInput.disabled = true; pinInput.value = ""; }
     if (loginBtn) loginBtn.disabled = true;
@@ -455,23 +452,12 @@ function updateDropdownDataAttributes() {
 
 function setupEvents() {
   document.getElementById("btn-login-owner")?.addEventListener("click", handleOwnerPinLogin);
-  
-  const pinInput = document.getElementById("input-owner-pin");
-  if (pinInput) {
-    pinInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        dismissMobileKeyboard();
-        handleOwnerPinLogin();
-      }
-    });
-
-    // Smoothly scrolls the executive card into view above the mobile keyboard on focus
-    pinInput.addEventListener("focus", () => {
-      setTimeout(() => {
-        pinInput.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 300);
-    });
-  }
+  document.getElementById("input-owner-pin")?.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      dismissMobileKeyboard();
+      handleOwnerPinLogin();
+    }
+  });
 
   document.querySelectorAll("input").forEach(input => {
     input.addEventListener("keydown", (e) => {
@@ -660,13 +646,6 @@ function getDaysRemaining(endDateStr) {
   const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
 
   return diffDays >= 0 ? diffDays + 1 : diffDays;
-}
-
-function startSync() {
-  if (State.timer) clearInterval(State.timer);
-  State.timer = setInterval(() => {
-    if (State.activeView !== "auth" && !State.isFetching) fetchData(true);
-  }, CONFIG.pollInterval);
 }
 
 async function fetchData(silent = false) {
@@ -870,7 +849,6 @@ function renderMember() {
   document.getElementById("m-member-name").innerText = member.Full_Name;
   document.getElementById("m-member-sub").innerText = `Member ID: ${member.Member_ID}`;
   
-  // Renders the full unabbreviated plan name
   document.getElementById("m-plan-badge").innerText = member.Plan_Name || "Membership";
   document.getElementById("m-days-number").innerText = Math.max(0, days);
   
