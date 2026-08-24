@@ -12,11 +12,11 @@
 </head>
 <body>
 
-  <!-- Single Continuous Loading Overlay -->
+  <!-- SINGLE COMMON SPINNER (Never hidden until full initialization) -->
   <div id="loading-spinner" class="spinner-overlay">
     <div class="spinner-container">
       <div class="spinner"></div>
-      <span class="spinner-text" id="spinner-text">Restoring owner session & syncing records...</span>
+      <span class="spinner-text" id="spinner-text">Loading management system...</span>
     </div>
   </div>
 
@@ -61,7 +61,6 @@
             <div class="input-with-icon">
               <input type="password" id="input-owner-pin" placeholder="Enter owner master PIN" maxlength="20" autocomplete="current-password" />
             </div>
-            <!-- In-line error text view slot -->
             <div id="owner-pin-error" style="font-size: 12px; font-weight: 600; color: var(--rose-text); margin-top: 6px;"></div>
           </div>
 
@@ -84,7 +83,6 @@
           <p class="text-subtle">Monitor member plans & dues</p>
         </div>
         <div class="button-cluster">
-          <!-- Modern SVG Icon Action Buttons -->
           <button class="icon-button modern-icon-btn" onclick="openPlanEditorModal()" title="Edit Plan Prices">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 20h9"></path>
@@ -96,7 +94,6 @@
               <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.66-5.66"></path>
             </svg>
           </button>
-         <!-- Modern Power / On-Off SVG Icon for Logout -->
           <button class="icon-button modern-icon-btn btn-logout-icon" onclick="promptOwnerExit()" title="Log Out">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
@@ -106,7 +103,6 @@
         </div>
       </div>
 
-      <!-- Compact Single-Row Stats Bar -->
       <div class="card compact-stats-bar mb-4">
         <div class="stat-col">
           <span class="stat-lbl">Active Members</span>
@@ -151,7 +147,6 @@
           </div>
         </div>
 
-        <!-- Add Member Form -->
         <div id="owner-form-view" class="p-6 hidden">
           <form id="admission-form" class="admission-grid">
             <div class="field-group">
