@@ -252,6 +252,7 @@ function formatDate(dateInput, includeYear = true) {
 }
 
 function showSpinner(text = "Syncing with Google Sheets...") {
+  // Prevent showing a secondary spinner if we are already in the middle of initialization or fetching
   const spinner = document.getElementById("loading-spinner");
   const spinnerText = document.getElementById("spinner-text");
   if (spinnerText) spinnerText.innerText = text;
@@ -690,6 +691,9 @@ function getDaysRemaining(endDateStr) {
 
 async function fetchData(silent = false) {
   if (!CONFIG.apiUrl || CONFIG.apiUrl.includes("YOUR_GOOGLE_APPS_SCRIPT")) return;
+
+  // If a global sync/init is already active, force silent mode to prevent double spinners
+  if (State.isFetching) silent = true;
 
   State.isFetching = true;
   if (!silent) showSpinner("Syncing records...");
