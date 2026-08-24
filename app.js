@@ -1054,3 +1054,74 @@ async function deleteMember(memberId, fullName) {
     hideSpinner();
   }
 }
+
+// --- OTP RESET ENGINE ---
+function openResetModal(e) {
+  e.preventDefault();
+  dismissMobileKeyboard();
+  document.getElementById("reset-modal").classList.remove("hidden");
+  document.getElementById("reset-step-1").classList.remove("hidden");
+  document.getElementById("reset-step-2").classList.add("hidden");
+  document.getElementById("reset-desc").innerText = "Enter your registered admin email address to receive an OTP.";
+  document.getElementById("reset-email").value = "";
+}
+
+function closeResetModal() {
+  document.getElementById("reset-modal").classList.add("hidden");
+}
+
+async function requestOTP() {
+  const email = document.getElementById("reset-email").value.trim();
+  if (!email) return showToast("Please enter your email.", true);
+
+  showSpinner("Sending OTP...");
+  try {
+    const res = await fetch(CONFIG.apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "requestOtp", email: email })
+    });
+    const result = await res.json();
+    
+    if (result.status === "success") {
+      showToast("OTP sent to your email!");
+      document.getElementById("reset-step-1").classList.add("hidden");
+      document.getElementById("reset-step-2").classList.remove("hidden");
+      document.getElementById("reset-desc").innerText = "Enter the 6-digit code sent to your email and set your new PIN.";
+    } else {
+      showToast(result.message || "Failed to send OTP", true);
+    }
+  } catch (err) {
+    showToast("Network error.", true);
+  } finally {
+    hideSpinner();
+  }
+}
+
+async function submitNewPin() {
+  const otp = document.getElementById("reset-otp").value.trim();
+  const newPin = document.getElementById("reset-new-pin").value.trim();
+  
+  if (!otp || !newPin) return showToast("Please fill in both fields.", true);
+
+  showSpinner("Verifying and updating PIN...");
+  try {
+    const res = await fetch(CONFIG.apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "resetPin", otp: otp, newPin: newPin })
+    });
+    const result = await res.json();
+    
+    if (result.status === "success") {
+      showToast("Master PIN reset successfully! You can now log in.");
+      closeResetModal();
+    } else {
+      showToast(result.message || "Invalid OTP", true);
+    }
+  } catch (err) {
+    showToast("Network error.", true);
+  } finally {
+    hideSpinner();
+  }
+}
