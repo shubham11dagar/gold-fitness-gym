@@ -51,25 +51,22 @@ function dismissMobileKeyboard() {
   }
 }
 
-// SINGLE COMMON BOOT SEQUENCE: The spinner starts visible from HTML and is hidden ONLY when everything is done.
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
   setupTheme();
   setupEvents();
   initDates();
   checkLockoutStatus();
 
-  try {
-    const isOwnerLoggedIn = await checkOwnerAutoLogin();
+  // Single unified spinner text covering both token verification and data fetch
+  showSpinner("Restoring owner session & syncing records...");
+
+  checkOwnerAutoLogin().then((isOwnerLoggedIn) => {
     if (!isOwnerLoggedIn) {
+      hideSpinner();
       switchView("auth", true);
     }
-  } catch (err) {
-    switchView("auth", true);
-  } finally {
-    // Hide the single common spinner completely here at the very end
-    const spinner = document.getElementById("loading-spinner");
-    if (spinner) spinner.classList.add("hidden");
-  }
+    // If logged in successfully, checkOwnerAutoLogin/fetchData will handle hiding the spinner.
+  });
 });
 
 async function saveOwnerSession(pinUsed) {
@@ -105,13 +102,14 @@ async function checkOwnerAutoLogin() {
   try {
     const session = JSON.parse(raw);
     
+    // 1. Check 15-day inactivity timeout[cite: 4]
     if (Date.now() - session.lastActive > OWNER_SESSION_CONFIG.inactivityLimitMs) {
       clearOwnerSession();
       showToast("Owner session expired after 15 days of inactivity.", true);
       return false;
     }
 
-    // Combine password verification and data fetch into one background sequence under the single spinner
+    // 2. Active Cloud PIN Validation Check
     const isValid = await verifyPinTokenWithCloud(session.pinToken);
     if (!isValid) {
       clearOwnerSession();
@@ -122,8 +120,9 @@ async function checkOwnerAutoLogin() {
     touchOwnerSession();
     State.isOwnerAuthenticated = true;
     
+    // 3. Directly load data and switch to owner dashboard under the same spinner session
     await fetchData(true);
-    
+    hideSpinner();
     switchView("owner", true);
     return true;
   } catch (e) {
@@ -143,7 +142,7 @@ async function verifyPinTokenWithCloud(savedToken) {
     const data = await res.json();
     return data.status === "success";
   } catch (err) {
-    return true; 
+    return true; // Fallback if offline
   }
 }
 
@@ -252,8 +251,8 @@ function formatDate(dateInput, includeYear = true) {
   return includeYear ? `${day} ${month} ${d.getFullYear()}` : `${day} ${month}`;
 }
 
-// Single spinner utility for manual actions later (like saving prices or refreshing)
-function showSpinner(text = "Syncing records...") {
+function showSpinner(text = "Syncing with Google Sheets...") {
+  // Prevent showing a secondary spinner if we are already in the middle of initialization or fetching
   const spinner = document.getElementById("loading-spinner");
   const spinnerText = document.getElementById("spinner-text");
   if (spinnerText) spinnerText.innerText = text;
@@ -361,6 +360,7 @@ function setOwnerTab(tab) {
   }
 }
 
+// --- PLAN SELECTION & PRICE AUTO-FILL ENGINE ---
 function onPlanSelectionChange(selectId, paidInputId, customGroupId) {
   const planSelect = document.getElementById(selectId);
   const paidInput = document.getElementById(paidInputId);
@@ -385,7 +385,7 @@ function onPlanSelectionChange(selectId, paidInputId, customGroupId) {
 
 async function openPlanEditorModal() {
   dismissMobileKeyboard();
-  showSpinner("Fetching latest plan prices...");
+  showSpinner("Fetching latest plan prices from database...");
 
   try {
     const res = await fetch(`${CONFIG.apiUrl}?action=getAllData`);
@@ -396,7 +396,7 @@ async function openPlanEditorModal() {
       updateDropdownDataAttributes();
     }
   } catch (err) {
-    showToast("Could not refresh prices from cloud.", true);
+    showToast("Could not refresh prices from cloud. Using cached values.", true);
   } finally {
     hideSpinner();
   }
@@ -425,7 +425,7 @@ async function handlePlanPricesSubmit(e) {
 
   const btn = document.getElementById("btn-save-prices");
   btn.disabled = true;
-  showSpinner("Updating plan prices...");
+  showSpinner("Updating plan prices to cloud...");
 
   const newPrices = {
     "1 Month (Without Treadmill)": Number(document.getElementById("ep-1m-no").value),
@@ -692,6 +692,9 @@ function getDaysRemaining(endDateStr) {
 async function fetchData(silent = false) {
   if (!CONFIG.apiUrl || CONFIG.apiUrl.includes("YOUR_GOOGLE_APPS_SCRIPT")) return;
 
+  // If a global sync/init is already active, force silent mode to prevent double spinners
+  if (State.isFetching) silent = true;
+
   State.isFetching = true;
   if (!silent) showSpinner("Syncing records...");
 
@@ -826,7 +829,7 @@ async function handleAdmission(e) {
 
   const btn = document.getElementById("btn-save-member");
   btn.disabled = true;
-  showSpinner("Recording admission...");
+  showSpinner("Recording admission to Google Sheets...");
 
   const phoneOrId = document.getElementById("f-phone").value.trim();
   const planSelect = document.getElementById("f-plan");
@@ -869,6 +872,7 @@ async function handleAdmission(e) {
       showToast(result.message || "Error saving member", true);
     }
   } catch (err) {
+    console.error("Add Member Error:", err);
     showToast("Error adding member. Please check connection.", true);
   } finally {
     btn.disabled = false;
@@ -976,7 +980,7 @@ async function handleRenewSubmit(e) {
 
   const btn = document.getElementById("btn-submit-renew");
   btn.disabled = true;
-  showSpinner("Processing renewal...");
+  showSpinner("Renewing membership plan...");
 
   const planSelect = document.getElementById("r-plan");
   let chosenPlanName = planSelect.value;
@@ -1015,6 +1019,7 @@ async function handleRenewSubmit(e) {
       showToast(result.message || "Error processing renewal", true);
     }
   } catch (err) {
+    console.error("Renewal Error:", err);
     showToast("Error processing renewal. Please check network.", true);
   } finally {
     btn.disabled = false;
@@ -1049,6 +1054,7 @@ async function deleteMember(memberId, fullName) {
       showToast(result.message || "Failed to delete member", true);
     }
   } catch (err) {
+    console.error("Delete Error:", err);
     showToast("Error deleting member. Please check network.", true);
   } finally {
     hideSpinner();
