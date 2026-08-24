@@ -8,7 +8,7 @@ const CONFIG = {
 
 const OWNER_SESSION_CONFIG = {
   storageKey: "gym_owner_session",
-  inactivityLimitMs: 5 * 24 * 60 * 60 * 1000 // 5 Days
+  inactivityLimitMs: 5 * 24 * 60 * 60 * 1000 // 5 Day
 };
 
 const LOCKOUT_CONFIG = {
