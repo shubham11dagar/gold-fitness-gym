@@ -57,15 +57,15 @@ document.addEventListener("DOMContentLoaded", () => {
   initDates();
   checkLockoutStatus();
 
-  // Show spinner immediately to mask the background check
-  showSpinner("Restoring owner session...");
+  // Single unified spinner text covering both token verification and data fetch
+  showSpinner("Restoring owner session & syncing records...");
 
-  // Initialize auto-login asynchronously and handle view switching cleanly
   checkOwnerAutoLogin().then((isOwnerLoggedIn) => {
-    hideSpinner();
     if (!isOwnerLoggedIn) {
+      hideSpinner();
       switchView("auth", true);
     }
+    // If logged in successfully, checkOwnerAutoLogin/fetchData will handle hiding the spinner.
   });
 });
 
@@ -109,7 +109,7 @@ async function checkOwnerAutoLogin() {
       return false;
     }
 
-    // 2. Active Cloud PIN Validation Check (Ensures manual Sheet updates invalidate old sessions)
+    // 2. Active Cloud PIN Validation Check
     const isValid = await verifyPinTokenWithCloud(session.pinToken);
     if (!isValid) {
       clearOwnerSession();
@@ -119,7 +119,11 @@ async function checkOwnerAutoLogin() {
 
     touchOwnerSession();
     State.isOwnerAuthenticated = true;
-    switchView("owner", false);
+    
+    // 3. Directly load data and switch to owner dashboard under the same spinner session
+    await fetchData(true);
+    hideSpinner();
+    switchView("owner", true);
     return true;
   } catch (e) {
     clearOwnerSession();
@@ -138,8 +142,7 @@ async function verifyPinTokenWithCloud(savedToken) {
     const data = await res.json();
     return data.status === "success";
   } catch (err) {
-    // Fallback if offline so session isn't killed due to bad connection
-    return true; 
+    return true; // Fallback if offline
   }
 }
 
@@ -689,7 +692,7 @@ async function fetchData(silent = false) {
   if (!CONFIG.apiUrl || CONFIG.apiUrl.includes("YOUR_GOOGLE_APPS_SCRIPT")) return;
 
   State.isFetching = true;
-  if (!silent) showSpinner("Loading latest gym records...");
+  if (!silent) showSpinner("Syncing records...");
 
   try {
     const res = await fetch(`${CONFIG.apiUrl}?action=getAllData`);
