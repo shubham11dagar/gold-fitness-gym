@@ -57,8 +57,12 @@ document.addEventListener("DOMContentLoaded", () => {
   initDates();
   checkLockoutStatus();
 
-  // Initialize auto-login asynchronously to check sheet PIN validity
+  // Show spinner immediately to mask the background check
+  showSpinner("Restoring owner session...");
+
+  // Initialize auto-login asynchronously and handle view switching cleanly
   checkOwnerAutoLogin().then((isOwnerLoggedIn) => {
+    hideSpinner();
     if (!isOwnerLoggedIn) {
       switchView("auth", true);
     }
