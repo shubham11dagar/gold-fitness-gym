@@ -51,7 +51,7 @@ function dismissMobileKeyboard() {
   }
 }
 
-// Unified Single Boot Sequence: Spinner is already showing from HTML and hides ONLY when fully finished
+// SINGLE COMMON BOOT SEQUENCE: The spinner starts visible from HTML and is hidden ONLY when everything is done.
 document.addEventListener("DOMContentLoaded", async () => {
   setupTheme();
   setupEvents();
@@ -111,6 +111,7 @@ async function checkOwnerAutoLogin() {
       return false;
     }
 
+    // Combine password verification and data fetch into one background sequence under the single spinner
     const isValid = await verifyPinTokenWithCloud(session.pinToken);
     if (!isValid) {
       clearOwnerSession();
@@ -121,7 +122,6 @@ async function checkOwnerAutoLogin() {
     touchOwnerSession();
     State.isOwnerAuthenticated = true;
     
-    // Sync data silently under the same shared boot sequence
     await fetchData(true);
     
     switchView("owner", true);
@@ -252,6 +252,7 @@ function formatDate(dateInput, includeYear = true) {
   return includeYear ? `${day} ${month} ${d.getFullYear()}` : `${day} ${month}`;
 }
 
+// Single spinner utility for manual actions later (like saving prices or refreshing)
 function showSpinner(text = "Syncing records...") {
   const spinner = document.getElementById("loading-spinner");
   const spinnerText = document.getElementById("spinner-text");
