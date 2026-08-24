@@ -8,7 +8,7 @@ const CONFIG = {
 
 const OWNER_SESSION_CONFIG = {
   storageKey: "gym_owner_session",
-  inactivityLimitMs: 15 * 24 * 60 * 60 * 1000 // 15 Days
+  inactivityLimitMs: 5 * 24 * 60 * 60 * 1000 // 5 Days
 };
 
 const LOCKOUT_CONFIG = {
@@ -18,7 +18,7 @@ const LOCKOUT_CONFIG = {
     3: 30,    // 30 seconds
     4: 60,    // 1 minute
     5: 300,   // 5 minutes
-    6: 900    // 15 minutes
+    6: 900,    // 15 minutes
   }
 };
 
@@ -115,7 +115,7 @@ async function checkOwnerAutoLogin() {
     const isValid = await verifyPinTokenWithCloud(session.pinToken);
     if (!isValid) {
       clearOwnerSession();
-      showToast("Master PIN was updated in Google Sheets. Please log in again.", true);
+      showToast("PIN changed. Please log in again.", true);
       return false;
     }
 
