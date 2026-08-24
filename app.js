@@ -57,14 +57,21 @@ document.addEventListener("DOMContentLoaded", () => {
   initDates();
   checkLockoutStatus();
 
-  const isOwnerLoggedIn = checkOwnerAutoLogin();
-  if (!isOwnerLoggedIn) {
-    switchView("auth", true);
-  }
+  // Initialize auto-login asynchronously to check sheet PIN validity
+  checkOwnerAutoLogin().then((isOwnerLoggedIn) => {
+    if (!isOwnerLoggedIn) {
+      switchView("auth", true);
+    }
+  });
 });
 
-function saveOwnerSession() {
-  localStorage.setItem(OWNER_SESSION_CONFIG.storageKey, JSON.stringify({ authenticated: true, lastActive: Date.now() }));
+async function saveOwnerSession(pinUsed) {
+  const pinFingerprint = btoa(pinUsed + "gold_gym_secure_salt");
+  localStorage.setItem(OWNER_SESSION_CONFIG.storageKey, JSON.stringify({ 
+    authenticated: true, 
+    lastActive: Date.now(),
+    pinToken: pinFingerprint 
+  }));
   State.isOwnerAuthenticated = true;
 }
 
@@ -85,16 +92,27 @@ function clearOwnerSession() {
   State.isOwnerAuthenticated = false;
 }
 
-function checkOwnerAutoLogin() {
+async function checkOwnerAutoLogin() {
   const raw = localStorage.getItem(OWNER_SESSION_CONFIG.storageKey);
   if (!raw) return false;
   try {
     const session = JSON.parse(raw);
+    
+    // 1. Check 15-day inactivity timeout[cite: 4]
     if (Date.now() - session.lastActive > OWNER_SESSION_CONFIG.inactivityLimitMs) {
       clearOwnerSession();
       showToast("Owner session expired after 15 days of inactivity.", true);
       return false;
     }
+
+    // 2. Active Cloud PIN Validation Check (Ensures manual Sheet updates invalidate old sessions)
+    const isValid = await verifyPinTokenWithCloud(session.pinToken);
+    if (!isValid) {
+      clearOwnerSession();
+      showToast("Master PIN was updated in Google Sheets. Please log in again.", true);
+      return false;
+    }
+
     touchOwnerSession();
     State.isOwnerAuthenticated = true;
     switchView("owner", false);
@@ -102,6 +120,22 @@ function checkOwnerAutoLogin() {
   } catch (e) {
     clearOwnerSession();
     return false;
+  }
+}
+
+async function verifyPinTokenWithCloud(savedToken) {
+  if (!savedToken) return false;
+  try {
+    const res = await fetch(CONFIG.apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "verifyToken", token: savedToken })
+    });
+    const data = await res.json();
+    return data.status === "success";
+  } catch (err) {
+    // Fallback if offline so session isn't killed due to bad connection
+    return true; 
   }
 }
 
@@ -502,7 +536,6 @@ function setupEvents() {
   document.getElementById("renew-form")?.addEventListener("submit", handleRenewSubmit);
 }
 
-// --- HELPER TO DISPLAY IN-LINE PIN ERROR ---
 function setPinError(message) {
   let errorEl = document.getElementById("owner-pin-error");
   if (!errorEl) {
@@ -520,7 +553,7 @@ function setPinError(message) {
 
 async function handleOwnerPinLogin() {
   dismissMobileKeyboard();
-  setPinError(""); // Clear previous errors
+  setPinError("");
 
   if (checkLockoutStatus()) {
     setPinError("Account temporarily locked. Please wait.");
@@ -546,7 +579,7 @@ async function handleOwnerPinLogin() {
 
     if (data.status === "success") {
       clearLockoutData();
-      saveOwnerSession();
+      saveOwnerSession(enteredPin);
       if (pinInput) pinInput.value = "";
       setPinError("");
       
@@ -674,7 +707,6 @@ async function fetchData(silent = false) {
   }
 }
 
-// --- COMPACT OWNER TABLE PLAN FORMATTER ---
 function formatPlanDisplay(rawPlan) {
   if (!rawPlan) return "Standard";
   const str = String(rawPlan).trim();
