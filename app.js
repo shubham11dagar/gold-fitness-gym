@@ -45,30 +45,36 @@ const State = {
   lockoutInterval: null
 };
 
-// Spinner reference counter to prevent premature hiding
-let spinnerLockCount = 0;
-
 function dismissMobileKeyboard() {
   if (document.activeElement && typeof document.activeElement.blur === "function") {
     document.activeElement.blur();
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+// Single unified startup sequence under one continuous spinner
+document.addEventListener("DOMContentLoaded", async () => {
   setupTheme();
   setupEvents();
   initDates();
   checkLockoutStatus();
 
-  // Keep spinner locked open continuously during entire startup flow
-  showSpinner("Restoring owner session & syncing records...");
+  // Ensure spinner is visible with initial message
+  const spinner = document.getElementById("loading-spinner");
+  const spinnerText = document.getElementById("spinner-text");
+  if (spinnerText) spinnerText.innerText = "Restoring owner session & syncing records...";
+  if (spinner) spinner.classList.remove("hidden");
 
-  checkOwnerAutoLogin().then((isOwnerLoggedIn) => {
+  try {
+    const isOwnerLoggedIn = await checkOwnerAutoLogin();
     if (!isOwnerLoggedIn) {
-      hideSpinner();
       switchView("auth", true);
     }
-  });
+  } catch (err) {
+    switchView("auth", true);
+  } finally {
+    // Hide the spinner ONCE at the very end of all backend operations
+    if (spinner) spinner.classList.add("hidden");
+  }
 });
 
 async function saveOwnerSession(pinUsed) {
@@ -120,9 +126,9 @@ async function checkOwnerAutoLogin() {
     touchOwnerSession();
     State.isOwnerAuthenticated = true;
     
-    // Fetch data using the silent internal flag so it doesn't manipulate the shared spinner lock
+    // Fetch data under the same continuous startup block
     await fetchData(true);
-    hideSpinner(); // Safely closes the single unified startup spinner
+    
     switchView("owner", true);
     return true;
   } catch (e) {
@@ -251,9 +257,8 @@ function formatDate(dateInput, includeYear = true) {
   return includeYear ? `${day} ${month} ${d.getFullYear()}` : `${day} ${month}`;
 }
 
-// Unified Spinner Engine with Reference Locking
+// Standard manual spinner for action buttons (like clicking refresh, saving, etc.)
 function showSpinner(text = "Syncing records...") {
-  spinnerLockCount++;
   const spinner = document.getElementById("loading-spinner");
   const spinnerText = document.getElementById("spinner-text");
   if (spinnerText) spinnerText.innerText = text;
@@ -261,11 +266,8 @@ function showSpinner(text = "Syncing records...") {
 }
 
 function hideSpinner() {
-  spinnerLockCount = Math.max(0, spinnerLockCount - 1);
-  if (spinnerLockCount === 0) {
-    const spinner = document.getElementById("loading-spinner");
-    if (spinner) spinner.classList.add("hidden");
-  }
+  const spinner = document.getElementById("loading-spinner");
+  if (spinner) spinner.classList.add("hidden");
 }
 
 function showToast(msg, isError = false) {
