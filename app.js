@@ -18,7 +18,7 @@ const LOCKOUT_CONFIG = {
     3: 30,    // 30 seconds
     4: 60,    // 1 minute
     5: 300,   // 5 minutes
-    6: 900,    // 15 minutes
+    6: 900,   // 15 minutes
   }
 };
 
@@ -40,6 +40,7 @@ const State = {
   isOwnerAuthenticated: false,
   members: [],
   transactions: [],
+  softwareExpiry: null,
   activeIdentifier: null,
   isFetching: false,
   lockoutInterval: null
@@ -107,11 +108,10 @@ async function checkOwnerAutoLogin() {
     
     if (Date.now() - session.lastActive > OWNER_SESSION_CONFIG.inactivityLimitMs) {
       clearOwnerSession();
-      showToast("Owner session expired after 15 days of inactivity.", true);
+      showToast("Owner session expired after 5 days of inactivity.", true);
       return false;
     }
 
-    // Combine password verification and data fetch into one background sequence under the single spinner
     const isValid = await verifyPinTokenWithCloud(session.pinToken);
     if (!isValid) {
       clearOwnerSession();
@@ -252,7 +252,6 @@ function formatDate(dateInput, includeYear = true) {
   return includeYear ? `${day} ${month} ${d.getFullYear()}` : `${day} ${month}`;
 }
 
-// Single spinner utility for manual actions later (like saving prices or refreshing)
 function showSpinner(text = "Syncing records...") {
   const spinner = document.getElementById("loading-spinner");
   const spinnerText = document.getElementById("spinner-text");
@@ -689,6 +688,27 @@ function getDaysRemaining(endDateStr) {
   return diffDays >= 0 ? diffDays + 1 : diffDays;
 }
 
+// Check software expiration and toggle lockout screen
+function checkSoftwareLicense(expiryStr) {
+  State.softwareExpiry = expiryStr;
+  const lockoutScreen = document.getElementById("software-lockout-screen");
+  if (!lockoutScreen) return true;
+
+  if (!expiryStr) {
+    lockoutScreen.classList.remove("hidden");
+    return false;
+  }
+
+  const today = new Date().toISOString().split("T")[0];
+  if (today > expiryStr) {
+    lockoutScreen.classList.remove("hidden");
+    return false;
+  } else {
+    lockoutScreen.classList.add("hidden");
+    return true;
+  }
+}
+
 async function fetchData(silent = false) {
   if (!CONFIG.apiUrl || CONFIG.apiUrl.includes("YOUR_GOOGLE_APPS_SCRIPT")) return;
 
@@ -703,6 +723,12 @@ async function fetchData(silent = false) {
     if (data.plans) {
       GymPlans = data.plans;
       updateDropdownDataAttributes();
+    }
+
+    const isLicensed = checkSoftwareLicense(data.softwareExpiry);
+    if (!isLicensed) {
+      if (!silent) hideSpinner();
+      return;
     }
 
     if (State.activeView === "owner") renderOwner();
@@ -1123,5 +1149,74 @@ async function submitNewPin() {
     showToast("Network error.", true);
   } finally {
     hideSpinner();
+  }
+}
+
+// --- MANUAL RAZORPAY ONE-TIME PAYMENT INTEGRATION ---
+async function payManualSoftwareFee() {
+  dismissMobileKeyboard();
+  showSpinner("Initializing secure payment gateway...");
+
+  try {
+    const res = await fetch(CONFIG.apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "createSoftwareOrder" })
+    });
+    const data = await res.json();
+    hideSpinner();
+
+    if (data.status !== "success") {
+      showToast(data.message || "Could not initialize payment", true);
+      return;
+    }
+
+    const options = {
+      "key": "rzp_test_TTzXof5QaX4La5", // Your public Test Key ID
+      "amount": data.amount,
+      "currency": "INR",
+      "name": "Gold Fitness Gym",
+      "description": "Monthly Software License Fee",
+      "order_id": data.orderId,
+      "handler": async function (response) {
+        showSpinner("Verifying payment & unlocking dashboard...");
+        
+        try {
+          const verifyRes = await fetch(CONFIG.apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain" },
+            body: JSON.stringify({ 
+              action: "verifySoftwarePayment",
+              paymentId: response.razorpay_payment_id 
+            })
+          });
+          const verifyData = await verifyRes.json();
+          hideSpinner();
+
+          if (verifyData.status === "success") {
+            showToast("Payment successful! Software unlocked for 30 days.");
+            const lockoutScreen = document.getElementById("software-lockout-screen");
+            if (lockoutScreen) lockoutScreen.classList.add("hidden");
+            await fetchData(true);
+            switchView("owner", true);
+          } else {
+            showToast("Payment recorded, but failed to update expiry. Contact support.", true);
+          }
+        } catch (err) {
+          hideSpinner();
+          showToast("Error verifying payment completion.", true);
+        }
+      },
+      "theme": {
+        "color": "#3b82f6"
+      }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+
+  } catch (err) {
+    hideSpinner();
+    showToast("Network error launching payment gateway.", true);
   }
 }
