@@ -2,9 +2,9 @@ export async function onRequestPost(context) {
   try {
     const { env } = context;
 
-    const keyId = env.rzp_test_TTzXof5QaX4La5;
-    const keySecret = env.ZsCCd7uy7NLHh6JhtNxuY5FN;
-    const planId = env.plan_TTzVL6dCIf5utO;
+     const keyId = env.RAZORPAY_KEY_ID;
+    const keySecret = env.RAZORPAY_KEY_SECRET;
+    const planId = env.RAZORPAY_PLAN_ID;
 
     // Securely encode credentials for Razorpay API Basic Auth
     const credentials = btoa(`${keyId}:${keySecret}`);
