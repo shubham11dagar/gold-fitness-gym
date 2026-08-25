@@ -9,6 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Razorpay Checkout SDK Script -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
 
@@ -17,6 +19,20 @@
     <div class="spinner-container">
       <div class="spinner"></div>
       <span class="spinner-text" id="spinner-text">Loading owner dashboard...</span>
+    </div>
+  </div>
+
+  <!-- SOFTWARE LICENSE EXPIRED LOCK SCREEN OVERLAY -->
+  <div id="software-lockout-screen" class="modal-backdrop hidden" style="z-index: 3000; background: var(--bg);">
+    <div class="card auth-card" style="text-align: center; max-width: 420px; padding: 30px; margin: auto;">
+      <div style="font-size: 40px; margin-bottom: 10px;">🔒</div>
+      <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 8px;">Software License Expired</h2>
+      <p class="text-subtle" style="font-size: 13px; margin-bottom: 20px;">
+        Your monthly software subscription has expired. Please pay the monthly fee to unlock your management dashboard and access member records.
+      </p>
+      <button class="btn btn-primary btn-glow" onclick="payManualSoftwareFee()" style="width: 100%;">
+        Pay Monthly Fee (₹999) & Unlock &rarr;
+      </button>
     </div>
   </div>
 
@@ -438,7 +454,6 @@
         <label>Admin Email</label>
         <input type="email" id="reset-email" placeholder="owner@email.com" />
       </div>
-      <!-- Fixed: Enforced Side-by-Side Flex Layout -->
       <div class="modal-action-buttons" style="display: flex; gap: 10px; margin-top: 14px; width: 100%;">
         <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeResetModal()">Cancel</button>
         <button type="button" class="btn btn-primary btn-glow" style="flex: 1;" onclick="requestOTP()">Send OTP</button>
@@ -454,7 +469,6 @@
         <label>New Master PIN</label>
         <input type="password" id="reset-new-pin" placeholder="Enter new PIN" />
       </div>
-      <!-- Fixed: Enforced Side-by-Side Flex Layout -->
       <div class="modal-action-buttons" style="display: flex; gap: 10px; margin-top: 14px; width: 100%;">
         <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeResetModal()">Cancel</button>
         <button type="button" class="btn btn-primary btn-glow" style="flex: 1;" onclick="submitNewPin()">Save New PIN</button>
