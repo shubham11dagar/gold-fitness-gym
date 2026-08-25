@@ -22,19 +22,19 @@
     </div>
   </div>
 
-  <!-- SOFTWARE LICENSE EXPIRED LOCK SCREEN OVERLAY -->
-  <div id="software-lockout-screen" class="modal-backdrop hidden" style="z-index: 3000; background: var(--bg);">
-    <div class="card auth-card" style="text-align: center; max-width: 420px; padding: 30px; margin: auto;">
-      <div style="font-size: 40px; margin-bottom: 10px;">🔒</div>
-      <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 8px;">Software License Expired</h2>
-      <p class="text-subtle" style="font-size: 13px; margin-bottom: 20px;">
-        Your monthly software subscription has expired. Please pay the monthly fee to unlock your management dashboard and access member records.
-      </p>
-      <button class="btn btn-primary btn-glow" onclick="payManualSoftwareFee()" style="width: 100%;">
-        Pay Monthly Fee (₹999) & Unlock &rarr;
-      </button>
-    </div>
+<!-- SOFTWARE LICENSE EXPIRED LOCK SCREEN OVERLAY -->
+<div id="software-lockout-screen" class="modal-backdrop hidden" style="z-index: 3000; background: var(--bg);">
+  <div class="card auth-card" style="text-align: center; max-width: 420px; padding: 30px; margin: auto;">
+    <div style="font-size: 40px; margin-bottom: 10px;">🔒</div>
+    <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 8px;">Software License Expired</h2>
+    <p class="text-subtle" style="font-size: 13px; margin-bottom: 20px;">
+      Your software license has expired. If multiple periods were missed, the total fee is automatically calculated based on your overdue duration.
+    </p>
+    <button class="btn btn-primary btn-glow" onclick="payManualSoftwareFee()" style="width: 100%;">
+      Pay Due Fees & Unlock &rarr;
+    </button>
   </div>
+</div>
 
   <div class="app-shell">
     <header class="app-header">
