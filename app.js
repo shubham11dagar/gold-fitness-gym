@@ -1149,7 +1149,7 @@ async function startRazorpaySubscription() {
 
     // 2. Configure Razorpay Pop-up Modal options
     const options = {
-      "key": "YOUR_RAZORPAY_TEST_KEY_ID", // Replace with your public Razorpay Test Key ID
+      "key": "rzp_test_TTzXof5QaX4La5", // Replace with your public Razorpay Test Key ID
       "subscription_id": data.id, // Subscription ID returned by backend/Razorpay
       "name": "Gold Fitness Gym",
       "description": "Monthly Software Subscription Fee",
