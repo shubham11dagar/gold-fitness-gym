@@ -1178,6 +1178,7 @@ async function payManualSoftwareFee() {
       "name": "Gold Fitness Gym",
       "description": "Monthly Software License Fee",
       "order_id": data.orderId,
+      "webview_intent": true,      // to force UPI in webviews
       "handler": async function (response) {
         showSpinner("Verifying payment & unlocking dashboard...");
         
