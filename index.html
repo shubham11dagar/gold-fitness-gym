@@ -510,6 +510,24 @@
       </div>
     </div>
   </div>
+
+<!-- Modern Pre-Expiry Warning Modal Card -->
+  <div id="early-warning-modal" class="modal-backdrop hidden" style="z-index: 2500;">
+    <div class="card modal-box" style="max-width: 400px; text-align: left; position: relative; padding: 24px; margin: auto;">
+      <button type="button" onclick="closeEarlyWarningModal()" style="position: absolute; top: 16px; right: 16px; background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-muted); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; cursor: pointer; transition: all 0.2s;">✕</button>
+      
+      <div style="font-size: 28px; margin-bottom: 12px;">⚠️</div>
+      <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 6px; color: var(--text-main);">Software License Expiring Soon</h3>
+      <p class="text-subtle" style="font-size: 13px; margin-bottom: 20px; line-height: 1.4;">
+        Your 30-day software cycle is ending in 2 days or less. You can pay your bill early to ensure continuous access without any dashboard interruptions.
+      </p>
+  
+      <div style="display: flex; gap: 10px;">
+        <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeEarlyWarningModal()">Remind Me Later</button>
+        <button type="button" class="btn btn-primary btn-glow" style="flex: 1;" onclick="payEarlyFromModal()">Pay Bill Now &rarr;</button>
+      </div>
+    </div>
+  </div>
   
   <script src="app.js"></script>
   <script>
