@@ -1172,7 +1172,7 @@ async function payManualSoftwareFee() {
     }
 
     const options = {
-      "key": "rzp_live_TUGtgTTvKN3dLr", // Your public live Key ID
+      "key": "rzp_test_TUMlK3pf89cT99", // Your public live Key ID
       "amount": data.amount,
       "currency": "INR",
       "name": "Gold Fitness Gym",
