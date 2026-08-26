@@ -67,7 +67,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   } catch (err) {
     switchView("auth", true);
   } finally {
-    // Hide the single common spinner completely here at the very end
     const spinner = document.getElementById("loading-spinner");
     if (spinner) spinner.classList.add("hidden");
   }
@@ -701,7 +700,6 @@ function checkSoftwareLicense(expiryStr) {
 
   const today = new Date().toISOString().split("T")[0];
   
-  // LOGIC FIX: Locks securely on the exact expiry date
   if (today >= expiryStr) {
     lockoutScreen.classList.remove("hidden");
     return false;
@@ -1179,7 +1177,7 @@ async function payManualSoftwareFee() {
     }
 
     const options = {
-      "key": "rzp_live_TUGtgTTvKN3dLr", // live key
+      "key": "rzp_test_YourTestKeyHere", // Change to rzp_live_... for production mode
       "amount": data.amount,
       "currency": "INR",
       "name": "Gold Fitness Gym",
@@ -1297,7 +1295,7 @@ function closePolicyModal() {
   if (modal) modal.classList.add("hidden");
 }
 
-// --- EARLY WARNING MODAL LOGIC WITH SEPARATE CROSS & SNOOZE BEHAVIOR ---
+// --- EARLY WARNING MODAL LOGIC WITH DATE-BASED SNOOZE ---
 function handleEarlyWarningCheck(showWarning) {
   const modal = document.getElementById("early-warning-modal");
   if (!modal) return;
@@ -1307,12 +1305,9 @@ function handleEarlyWarningCheck(showWarning) {
     return;
   }
 
-  // Get today's date as a string (e.g., "2026-08-26")
   const todayStr = new Date().toISOString().split("T")[0];
   const dismissedDate = localStorage.getItem("early_warning_dismissed_date");
 
-  // If the user clicked "Remind Me Later" TODAY, keep it hidden.
-  // If they only clicked the cross (✕) or haven't clicked snooze, it will show up.
   if (dismissedDate === todayStr) {
     modal.classList.add("hidden");
   } else {
@@ -1320,20 +1315,15 @@ function handleEarlyWarningCheck(showWarning) {
   }
 }
 
-// 1. THE CROSS BUTTON (✕): Closes the modal for now, but lets it appear again if they refresh/reopen today.
 function closeEarlyWarningModal() {
   const modal = document.getElementById("early-warning-modal");
   if (modal) modal.classList.add("hidden");
-  // Notice we do NOT save to localStorage here, so refreshing brings it back.
 }
 
-// 2. THE "REMIND ME LATER" BUTTON: Snoozes the card for the rest of the current calendar day.
 function snoozeEarlyWarning() {
   const modal = document.getElementById("early-warning-modal");
   if (modal) modal.classList.add("hidden");
 
-  // Save TODAY'S date so it stays hidden for the rest of today, 
-  // but automatically pops up again tomorrow.
   const todayStr = new Date().toISOString().split("T")[0];
   localStorage.setItem("early_warning_dismissed_date", todayStr);
 }
@@ -1341,5 +1331,5 @@ function snoozeEarlyWarning() {
 function payEarlyFromModal() {
   const modal = document.getElementById("early-warning-modal");
   if (modal) modal.classList.add("hidden");
-  payManualSoftwareFee(); // Triggers Razorpay payment gateway
+  payManualSoftwareFee();
 }
