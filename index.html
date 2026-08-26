@@ -439,6 +439,22 @@
       </div>
     </div>
 
+    <!-- ==========================================
+         COMPLIANCE FOOTER (Required by Razorpay)
+         ========================================== -->
+    <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); text-align: center; font-size: 11px; color: var(--text-muted);">
+      <p style="margin-bottom: 8px;"><strong>Gold Fitness Gym Management System</strong> | Support: support@goldfitness.com | Phone: +91 98765 43210</p>
+      <p style="margin-bottom: 10px;">Address: Main Market, Fitness Street, Sonipat, Haryana, India</p>
+      <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+        <a href="#" onclick="openPolicyModal('contact'); return false;" style="color: var(--primary); text-decoration: none;">Contact Us</a>
+        <a href="#" onclick="openPolicyModal('pricing'); return false;" style="color: var(--primary); text-decoration: none;">Pricing Details</a>
+        <a href="#" onclick="openPolicyModal('terms'); return false;" style="color: var(--primary); text-decoration: none;">Terms & Conditions</a>
+        <a href="#" onclick="openPolicyModal('privacy'); return false;" style="color: var(--primary); text-decoration: none;">Privacy Policy</a>
+        <a href="#" onclick="openPolicyModal('shipping'); return false;" style="color: var(--primary); text-decoration: none;">Shipping/Delivery Policy</a>
+        <a href="#" onclick="openPolicyModal('refund'); return false;" style="color: var(--primary); text-decoration: none;">Cancellation & Refund Policy</a>
+      </div>
+    </footer>
+
     <!-- Toast Notification -->
     <div id="toast" class="toast hidden"></div>
   </div>
@@ -476,6 +492,19 @@
     </div>
   </div>
 </div>
+
+  <!-- POLICY & COMPLIANCE MODAL CONTAINER -->
+  <div id="policy-modal" class="modal-backdrop hidden">
+    <div class="card modal-box scrollable-modal" style="max-width: 600px; text-align: left;">
+      <div class="section-title-row">
+        <h3 id="policy-modal-title" style="font-size: 18px; font-weight: 800;">Policy</h3>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closePolicyModal()">✕</button>
+      </div>
+      <div id="policy-modal-body" class="text-subtle" style="font-size: 13px; line-height: 1.6; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+        <!-- Dynamic Content -->
+      </div>
+    </div>
+  </div>
   
   <script src="app.js"></script>
 </body>
