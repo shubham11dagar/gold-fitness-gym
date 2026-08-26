@@ -1177,7 +1177,7 @@ async function payManualSoftwareFee() {
     }
 
     const options = {
-      "key": "rzp_test_YourTestKeyHere", // Change to rzp_live_... for production mode
+      "key": "rzp_live_TUGtgTTvKN3dLr", // live key
       "amount": data.amount,
       "currency": "INR",
       "name": "Gold Fitness Gym",
