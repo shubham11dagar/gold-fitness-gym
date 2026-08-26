@@ -3,6 +3,6 @@
       "target": {
         "namespace": "android_app",
         "package_name": "dev.workers.goldfitness.gym.twa",
-        "sha256_cert_fingerprints": ["CB:1F:8D:49:01:20:EC:3D:DC:2C:0A:66:43:0C:37:36:77:BC:59:4D:BB:F9:24:69:D9:1A:2B:FD:E6:C8:C6:3A"]
+        "sha256_cert_fingerprints": ["30:0A:78:DA:BB:1C:E9:48:46:58:BA:15:F2:7D:F8:28:6E:A1:40:10:0C:8D:A6:0E:26:F5:10:CF:D6:5B:13:C8"]
       }
     }]
