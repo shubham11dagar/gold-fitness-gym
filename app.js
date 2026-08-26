@@ -1179,6 +1179,20 @@ async function payManualSoftwareFee() {
       "description": "Monthly Software License Fee",
       "order_id": data.orderId,
       "webview_intent": true,      // to force UPI in webviews
+
+      // --- CUSTOMIZE & HIDE UNWANTED PAYMENT OPTIONS HERE ---
+      "display": {
+        "hide": [
+          { "method": "wallet" },
+          { "method": "emi" },
+          { "method": "paylater" }
+        ],
+        "sequence": ["block.upi", "block.card", "block.netbanking"],
+        "preferences": {
+          "show_default_blocks": true
+        }
+      },
+
       "handler": async function (response) {
         showSpinner("Verifying payment & unlocking dashboard...");
         
@@ -1289,4 +1303,3 @@ function closePolicyModal() {
   const modal = document.getElementById("policy-modal");
   if (modal) modal.classList.add("hidden");
 }
-
