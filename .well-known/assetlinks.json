@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "dev.workers.goldfitness.gym.twa",
+        "sha256_cert_fingerprints": ["79:E3:97:53:19:3F:9D:F3:55:9F:9C:9E:5F:BE:59:0B:B6:7B:17:2A:97:24:66:7B:64:D9:CB:7E:C7:B2:7E:07"]
+      }
+    }]
