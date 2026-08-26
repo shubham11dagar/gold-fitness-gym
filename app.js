@@ -1179,7 +1179,7 @@ async function payManualSoftwareFee() {
     }
 
     const options = {
-      "key": "rzp_test_YourTestKeyHere", // Make sure to use test key during testing phase
+      "key": "rzp_live_TUGtgTTvKN3dLr", // live key
       "amount": data.amount,
       "currency": "INR",
       "name": "Gold Fitness Gym",
