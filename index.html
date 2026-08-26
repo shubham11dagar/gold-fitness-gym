@@ -522,8 +522,11 @@
         Your 30-day software cycle is ending in 2 days or less. You can pay your bill early to ensure continuous access without any dashboard interruptions.
       </p>
   
-      <div style="display: flex; gap: 10px;">
-        <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeEarlyWarningModal()">Remind Me Later</button>
+     <div style="display: flex; gap: 10px;">
+        <!-- Linked to snooze function so it stays hidden for the day -->
+        <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="snoozeEarlyWarning()">Remind Me Later</button>
+        
+        <!-- Linked to payment function -->
         <button type="button" class="btn btn-primary btn-glow" style="flex: 1;" onclick="payEarlyFromModal()">Pay Bill Now &rarr;</button>
       </div>
     </div>
