@@ -1225,35 +1225,35 @@ async function payManualSoftwareFee() {
 const POLICY_CONTENTS = {
   contact: `
     <h4 style="color:var(--text-main); margin-bottom:8px;">Contact Us</h4>
-    <p><strong>Merchant Legal Entity Name:</strong> Gold Fitness Gym</p>
-    <p><strong>Registered Address:</strong> Main Market, Fitness Street, Sonipat, Haryana, India</p>
-    <p><strong>Operational Address:</strong> Main Market, Fitness Street, Sonipat, Haryana, India</p>
-    <p><strong>Contact Email:</strong> support@goldfitness.com</p>
-    <p><strong>Phone Number:</strong> +91 98765 43210</p>
+    <p><strong>Merchant Legal Entity Name:</strong> SD Labs</p>
+    <p><strong>Registered Address:</strong> Sec 3, Rewari, Haryana</p>
+    <p><strong>Operational Address:</strong> Sec 3, Rewari, Haryana </p>
+    <p><strong>Contact Email:</strong> dev.shubham.tech@gmail.com</p>
+    <p><strong>Phone Number:</strong> +91 9467055294</p>
   `,
   pricing: `
     <h4 style="color:var(--text-main); margin-bottom:8px;">Pricing Details</h4>
     <p>Our software service operates on a recurring monthly management subscription model:</p>
     <ul style="margin-left: 20px; margin-top: 8px;">
-      <li><strong>Gold Fitness Gym Owner Portal License:</strong> ₹3,000 / month (inclusive of all standard taxes).</li>
+      <li><strong>Gold Fitness Gym Owner Portal License:</strong> ₹3,000 / month (exclusive of all standard taxes).</li>
       <li>Each payment unlocks full dashboard administrative features, client management databases, and transaction ledgers for a 30-day validity window.</li>
     </ul>
   `,
   terms: `
     <h4 style="color:var(--text-main); margin-bottom:8px;">Terms and Conditions</h4>
-    <p>Welcome to Gold Fitness Gym Management System. By accessing or using our software console, you agree to comply with and be bound by the following terms and conditions.</p>
+    <p>Welcome to SD Labs software solutions. By accessing or using our software console, you agree to comply with and be bound by the following terms and conditions.</p>
     <p style="margin-top: 8px;">1. <strong>License Usage:</strong> The software dashboard is licensed strictly to the registered gym owner for managing internal members and billing operations.</p>
     <p style="margin-top: 8px;">2. <strong>Payments:</strong> Software subscription fees are billed at ₹3,000 per 30-day billing cycle. Failure to renew on time will result in temporary administrative lockout until dues are cleared.</p>
   `,
   privacy: `
     <h4 style="color:var(--text-main); margin-bottom:8px;">Privacy Policy</h4>
-    <p>Gold Fitness Gym respects your privacy and is committed to protecting your personal data.</p>
+    <p>SD Labs respects your privacy and is committed to protecting your personal data.</p>
     <p style="margin-top: 8px;">1. <strong>Data Collection:</strong> We collect admin contact information, gym member records, and payment logs exclusively to provide and maintain your management portal functionality.</p>
     <p style="margin-top: 8px;">2. <strong>Data Security:</strong> All records are securely encrypted and stored using isolated cloud databases. We do not sell or share your data with external third-party advertisers.</p>
   `,
   shipping: `
     <h4 style="color:var(--text-main); margin-bottom:8px;">Shipping and Delivery Policy</h4>
-    <p>Since Gold Fitness Gym Management System is a cloud-hosted Software-as-a-Service (SaaS) platform:</p>
+    <p>Since SD Labs is a cloud-hosted Software-as-a-Service (SaaS) platform:</p>
     <p style="margin-top: 8px;">• No physical products, goods, or documents are shipped.</p>
     <p style="margin-top: 8px;">• Service delivery is instantaneous upon successful confirmation of your monthly software license payment, immediately updating your cloud license expiry status.</p>
   `,
