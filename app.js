@@ -1297,27 +1297,40 @@ function closePolicyModal() {
   if (modal) modal.classList.add("hidden");
 }
 
-// --- EARLY WARNING MODAL LOGIC ---
+// --- EARLY WARNING MODAL LOGIC WITH DATE-BASED SNOOZE ---
 function handleEarlyWarningCheck(showWarning) {
   const modal = document.getElementById("early-warning-modal");
   if (!modal) return;
 
-  // Show if backend flags it and user hasn't explicitly dismissed it this session
-  if (showWarning && sessionStorage.getItem("early_warning_dismissed") !== "true") {
-    modal.classList.remove("hidden");
-  } else {
+  if (!showWarning) {
     modal.classList.add("hidden");
+    return;
+  }
+
+  // Get today's date as a string (e.g., "2026-08-25")
+  const todayStr = new Date().toISOString().split("T")[0];
+  const dismissedDate = localStorage.getItem("early_warning_dismissed_date");
+
+  // If the user already clicked "Remind Me Later" TODAY, keep it hidden.
+  // Otherwise, show it again (even if they dismissed it yesterday).
+  if (dismissedDate === todayStr) {
+    modal.classList.add("hidden");
+  } else {
+    modal.classList.remove("hidden");
   }
 }
 
 function closeEarlyWarningModal() {
   const modal = document.getElementById("early-warning-modal");
   if (modal) modal.classList.add("hidden");
-  // Remember dismissal for this session
-  sessionStorage.setItem("early_warning_dismissed", "true");
+
+  // Save TODAY'S date so it stays dismissed for the rest of today, 
+  // but automatically pops up again tomorrow if still within the 2-day window.
+  const todayStr = new Date().toISOString().split("T")[0];
+  localStorage.setItem("early_warning_dismissed_date", todayStr);
 }
 
 function payEarlyFromModal() {
   closeEarlyWarningModal();
-  payManualSoftwareFee();
+  payManualSoftwareFee(); // Triggers Razorpay payment gateway
 }
