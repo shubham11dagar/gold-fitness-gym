@@ -1220,3 +1220,72 @@ async function payManualSoftwareFee() {
     showToast("Network error launching payment gateway.", true);
   }
 }
+
+// --- COMPLIANCE POLICY MODALS HANDLER (Razorpay Requirement) ---
+const POLICY_CONTENTS = {
+  contact: `
+    <h4 style="color:var(--text-main); margin-bottom:8px;">Contact Us</h4>
+    <p><strong>Merchant Legal Entity Name:</strong> Gold Fitness Gym</p>
+    <p><strong>Registered Address:</strong> Main Market, Fitness Street, Sonipat, Haryana, India</p>
+    <p><strong>Operational Address:</strong> Main Market, Fitness Street, Sonipat, Haryana, India</p>
+    <p><strong>Contact Email:</strong> support@goldfitness.com</p>
+    <p><strong>Phone Number:</strong> +91 98765 43210</p>
+  `,
+  pricing: `
+    <h4 style="color:var(--text-main); margin-bottom:8px;">Pricing Details</h4>
+    <p>Our software service operates on a recurring monthly management subscription model:</p>
+    <ul style="margin-left: 20px; margin-top: 8px;">
+      <li><strong>Gold Fitness Gym Owner Portal License:</strong> ₹3,000 / month (inclusive of all standard taxes).</li>
+      <li>Each payment unlocks full dashboard administrative features, client management databases, and transaction ledgers for a 30-day validity window.</li>
+    </ul>
+  `,
+  terms: `
+    <h4 style="color:var(--text-main); margin-bottom:8px;">Terms and Conditions</h4>
+    <p>Welcome to Gold Fitness Gym Management System. By accessing or using our software console, you agree to comply with and be bound by the following terms and conditions.</p>
+    <p style="margin-top: 8px;">1. <strong>License Usage:</strong> The software dashboard is licensed strictly to the registered gym owner for managing internal members and billing operations.</p>
+    <p style="margin-top: 8px;">2. <strong>Payments:</strong> Software subscription fees are billed at ₹3,000 per 30-day billing cycle. Failure to renew on time will result in temporary administrative lockout until dues are cleared.</p>
+  `,
+  privacy: `
+    <h4 style="color:var(--text-main); margin-bottom:8px;">Privacy Policy</h4>
+    <p>Gold Fitness Gym respects your privacy and is committed to protecting your personal data.</p>
+    <p style="margin-top: 8px;">1. <strong>Data Collection:</strong> We collect admin contact information, gym member records, and payment logs exclusively to provide and maintain your management portal functionality.</p>
+    <p style="margin-top: 8px;">2. <strong>Data Security:</strong> All records are securely encrypted and stored using isolated cloud databases. We do not sell or share your data with external third-party advertisers.</p>
+  `,
+  shipping: `
+    <h4 style="color:var(--text-main); margin-bottom:8px;">Shipping and Delivery Policy</h4>
+    <p>Since Gold Fitness Gym Management System is a cloud-hosted Software-as-a-Service (SaaS) platform:</p>
+    <p style="margin-top: 8px;">• No physical products, goods, or documents are shipped.</p>
+    <p style="margin-top: 8px;">• Service delivery is instantaneous upon successful confirmation of your monthly software license payment, immediately updating your cloud license expiry status.</p>
+  `,
+  refund: `
+    <h4 style="color:var(--text-main); margin-bottom:8px;">Cancellation and Refund Policy</h4>
+    <p>1. <strong>Cancellation:</strong> Gym owners may cancel their software subscription at any time by choosing not to renew their monthly billing cycle.</p>
+    <p style="margin-top: 8px;">2. <strong>Refunds:</strong> Payments made toward monthly software access fees are strictly non-refundable once the 30-day billing period has commenced and access has been granted. Exceptions are evaluated strictly on a case-by-case basis for technical billing errors.</p>
+  `
+};
+
+function openPolicyModal(policyKey) {
+  dismissMobileKeyboard();
+  const modal = document.getElementById("policy-modal");
+  const titleEl = document.getElementById("policy-modal-title");
+  const bodyEl = document.getElementById("policy-modal-body");
+
+  const titles = {
+    contact: "Contact Us",
+    pricing: "Pricing Details",
+    terms: "Terms and Conditions",
+    privacy: "Privacy Policy",
+    shipping: "Shipping & Delivery Policy",
+    refund: "Cancellation & Refund Policy"
+  };
+
+  if (titleEl) titleEl.innerText = titles[policyKey] || "Policy Details";
+  if (bodyEl) bodyEl.innerHTML = POLICY_CONTENTS[policyKey] || "<p>Information unavailable.</p>";
+  if (modal) modal.classList.remove("hidden");
+}
+
+function closePolicyModal() {
+  const modal = document.getElementById("policy-modal");
+  if (modal) modal.classList.add("hidden");
+}
+
