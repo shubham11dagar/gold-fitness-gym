@@ -1297,7 +1297,7 @@ function closePolicyModal() {
   if (modal) modal.classList.add("hidden");
 }
 
-// --- EARLY WARNING MODAL LOGIC WITH DATE-BASED SNOOZE ---
+// --- EARLY WARNING MODAL LOGIC WITH SEPARATE CROSS & SNOOZE BEHAVIOR ---
 function handleEarlyWarningCheck(showWarning) {
   const modal = document.getElementById("early-warning-modal");
   if (!modal) return;
@@ -1307,12 +1307,12 @@ function handleEarlyWarningCheck(showWarning) {
     return;
   }
 
-  // Get today's date as a string (e.g., "2026-08-25")
+  // Get today's date as a string (e.g., "2026-08-26")
   const todayStr = new Date().toISOString().split("T")[0];
   const dismissedDate = localStorage.getItem("early_warning_dismissed_date");
 
-  // If the user already clicked "Remind Me Later" TODAY, keep it hidden.
-  // Otherwise, show it again (even if they dismissed it yesterday).
+  // If the user clicked "Remind Me Later" TODAY, keep it hidden.
+  // If they only clicked the cross (✕) or haven't clicked snooze, it will show up.
   if (dismissedDate === todayStr) {
     modal.classList.add("hidden");
   } else {
@@ -1320,17 +1320,26 @@ function handleEarlyWarningCheck(showWarning) {
   }
 }
 
+// 1. THE CROSS BUTTON (✕): Closes the modal for now, but lets it appear again if they refresh/reopen today.
 function closeEarlyWarningModal() {
   const modal = document.getElementById("early-warning-modal");
   if (modal) modal.classList.add("hidden");
+  // Notice we do NOT save to localStorage here, so refreshing brings it back.
+}
 
-  // Save TODAY'S date so it stays dismissed for the rest of today, 
-  // but automatically pops up again tomorrow if still within the 2-day window.
+// 2. THE "REMIND ME LATER" BUTTON: Snoozes the card for the rest of the current calendar day.
+function snoozeEarlyWarning() {
+  const modal = document.getElementById("early-warning-modal");
+  if (modal) modal.classList.add("hidden");
+
+  // Save TODAY'S date so it stays hidden for the rest of today, 
+  // but automatically pops up again tomorrow.
   const todayStr = new Date().toISOString().split("T")[0];
   localStorage.setItem("early_warning_dismissed_date", todayStr);
 }
 
 function payEarlyFromModal() {
-  closeEarlyWarningModal();
+  const modal = document.getElementById("early-warning-modal");
+  if (modal) modal.classList.add("hidden");
   payManualSoftwareFee(); // Triggers Razorpay payment gateway
 }
