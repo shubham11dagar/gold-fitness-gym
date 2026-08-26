@@ -3,8 +3,9 @@
   "short_name": "Gold Fitness",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0F172A",
-  "theme_color": "#0F172A",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF",
+  "description": "Gold Fitness Gym",
   "icons": [
     {
       "src": "gymlogo.png",
