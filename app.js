@@ -52,7 +52,7 @@ function dismissMobileKeyboard() {
   }
 }
 
-// SINGLE COMMON BOOT SEQUENCE: The spinner starts visible from HTML and is hidden ONLY when everything is done.
+// SINGLE COMMON BOOT SEQUENCE
 document.addEventListener("DOMContentLoaded", async () => {
   setupTheme();
   setupEvents();
@@ -700,6 +700,8 @@ function checkSoftwareLicense(expiryStr) {
   }
 
   const today = new Date().toISOString().split("T")[0];
+  
+  // LOGIC FIX: Locks securely on the exact expiry date
   if (today >= expiryStr) {
     lockoutScreen.classList.remove("hidden");
     return false;
@@ -709,8 +711,9 @@ function checkSoftwareLicense(expiryStr) {
   }
 }
 
+// MAIN DATA SYNC CONTROLLER
 async function fetchData(silent = false) {
-  if (!CONFIG.apiUrl || CONFIG.apiUrl.includes("YOUR_GOOGLE_APPS_SCRIPT")) return;
+  if (!CONFIG.apiUrl) return;
 
   State.isFetching = true;
   if (!silent) showSpinner("Syncing records...");
@@ -726,6 +729,10 @@ async function fetchData(silent = false) {
     }
 
     const isLicensed = checkSoftwareLicense(data.softwareExpiry);
+
+    // --- TRIGGER EARLY WARNING MODAL ---
+    handleEarlyWarningCheck(data.showEarlyWarning); 
+
     if (!isLicensed) {
       if (!silent) hideSpinner();
       return;
@@ -1172,13 +1179,13 @@ async function payManualSoftwareFee() {
     }
 
     const options = {
-      "key": "rzp_live_TUGtgTTvKN3dLr", // Your public live Key ID
+      "key": "rzp_test_YourTestKeyHere", // Make sure to use test key during testing phase
       "amount": data.amount,
       "currency": "INR",
       "name": "Gold Fitness Gym",
       "description": "Monthly Software License Fee",
       "order_id": data.orderId,
-      "webview_intent": true,      // to force UPI in webviews
+      "webview_intent": true,
       "handler": async function (response) {
         showSpinner("Verifying payment & unlocking dashboard...");
         
@@ -1195,7 +1202,7 @@ async function payManualSoftwareFee() {
           hideSpinner();
 
           if (verifyData.status === "success") {
-            showToast("Payment successful! Software unlocked for 30 days.");
+            showToast("Payment successful! Software unlocked for a fresh 30-day cycle.");
             const lockoutScreen = document.getElementById("software-lockout-screen");
             if (lockoutScreen) lockoutScreen.classList.add("hidden");
             await fetchData(true);
@@ -1288,4 +1295,29 @@ function openPolicyModal(policyKey) {
 function closePolicyModal() {
   const modal = document.getElementById("policy-modal");
   if (modal) modal.classList.add("hidden");
+}
+
+// --- EARLY WARNING MODAL LOGIC ---
+function handleEarlyWarningCheck(showWarning) {
+  const modal = document.getElementById("early-warning-modal");
+  if (!modal) return;
+
+  // Show if backend flags it and user hasn't explicitly dismissed it this session
+  if (showWarning && sessionStorage.getItem("early_warning_dismissed") !== "true") {
+    modal.classList.remove("hidden");
+  } else {
+    modal.classList.add("hidden");
+  }
+}
+
+function closeEarlyWarningModal() {
+  const modal = document.getElementById("early-warning-modal");
+  if (modal) modal.classList.add("hidden");
+  // Remember dismissal for this session
+  sessionStorage.setItem("early_warning_dismissed", "true");
+}
+
+function payEarlyFromModal() {
+  closeEarlyWarningModal();
+  payManualSoftwareFee();
 }
