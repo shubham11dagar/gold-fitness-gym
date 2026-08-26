@@ -700,7 +700,7 @@ function checkSoftwareLicense(expiryStr) {
   }
 
   const today = new Date().toISOString().split("T")[0];
-  if (today > expiryStr) {
+  if (today >= expiryStr) {
     lockoutScreen.classList.remove("hidden");
     return false;
   } else {
