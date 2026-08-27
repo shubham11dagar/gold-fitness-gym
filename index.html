@@ -1,563 +1,538 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0F172A">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Gold Fitness Gym - Owner Management Console</title>
-  <link rel="icon" href="gymlogo.png" type="image/png" />
-  <link rel="stylesheet" href="style.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <!-- Razorpay Checkout SDK Script -->
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Beast Gym | Unleash Your Ultimate Potential</title>
+    
+    <!-- SEO & Meta -->
+    <meta name="description" content="Rewari's premier fitness destination for strength, conditioning, and total body transformation. Located in Brass Market.">
+    
+    <!-- Fonts: Oswald for Headings, Inter for Body -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons (Phosphor Icons for sleek, modern UI look) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Tailwind CSS Setup -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#0a0a0a',
+                            card: '#1a1a1a',
+                            accent: '#dc2626', // Neon Crimson
+                            accentHover: '#ef4444',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Oswald', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'neon': '0 0 15px rgba(220, 38, 38, 0.5)',
+                        'neon-hover': '0 0 25px rgba(220, 38, 38, 0.8)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Utilities & Animations */
+        body { background-color: #0a0a0a; color: #a1a1aa; padding-bottom: env(safe-area-inset-bottom); }
+        .glass-nav { background: rgba(10, 10, 10, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .hero-overlay { background: linear-gradient(to bottom, rgba(10,10,10,0.3) 0%, #0a0a0a 100%); }
+        .text-glow { text-shadow: 0 0 20px rgba(220,38,38,0.5); }
+        
+        /* Hide Scrollbar but keep functionality */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #dc2626; }
+    </style>
 </head>
-<body>
+<body class="font-sans antialiased selection:bg-brand-accent selection:text-white relative pb-16 md:pb-0">
 
-  <!-- SINGLE COMMON SPINNER (Stays open for the entire boot sequence) -->
-  <div id="loading-spinner" class="spinner-overlay">
-    <div class="spinner-container">
-      <div class="spinner"></div>
-      <span class="spinner-text" id="spinner-text">Loading owner dashboard...</span>
+    <!-- Temporary Demo Notice Banner -->
+    <div class="bg-brand-accent text-white text-xs font-bold uppercase tracking-widest text-center py-2 px-4 fixed top-0 w-full z-[60] shadow-md flex items-center justify-center gap-2">
+        <i class="ph-fill ph-info text-base"></i>
+        <span>Demo Website Preview Only • Built for The Beast Gym</span>
     </div>
-  </div>
 
-<!-- SOFTWARE LICENSE EXPIRED LOCK SCREEN OVERLAY -->
-<div id="software-lockout-screen" class="modal-backdrop hidden" style="z-index: 3000; background: var(--bg);">
-  <div class="card auth-card" style="text-align: center; max-width: 420px; padding: 30px; margin: auto;">
-    <!-- Lock Icon with NO background and borderless pure dark red stroke -->
-    <div style="display: flex; justify-content: center; margin-bottom: 16px; color: #991b1b;">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-      </svg>
-    </div>
-    <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 8px;">Software License Expired</h2>
-    <p class="text-subtle" style="font-size: 13px; margin-bottom: 20px;">
-      Your software license has expired. If multiple periods were missed, the total fee is automatically calculated based on your overdue duration.
-    </p>
-    <button class="btn btn-primary btn-glow" onclick="payManualSoftwareFee()" style="width: 100%;">
-      Pay Due Fees & Unlock &rarr;
-    </button>
-  </div>
-</div>
+    <!-- Header / Navigation -->
+    <header class="fixed w-full top-8 z-50 glass-nav transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20">
+            <!-- Logo -->
+            <a href="#" class="flex items-center gap-2 group">
+                <i class="ph-fill ph-barbell text-brand-accent text-3xl group-hover:scale-110 transition-transform"></i>
+                <span class="font-heading text-2xl font-bold text-white tracking-widest uppercase">The Beast<span class="text-brand-accent">.</span></span>
+            </a>
 
-  <div class="app-shell">
-    <header class="app-header">
-      <div class="brand">
-        <img src="gymlogo.png" alt="Gym Logo" style="width: 38px; height: 38px; object-fit: contain; border-radius: 8px;" />
-        <div>
-          <span class="brand-name">GOLD FITNESS GYM</span>
-          <span class="brand-tag">MANAGEMENT CONSOLE</span>
+            <!-- Desktop Nav -->
+            <nav class="hidden md:flex gap-8 items-center font-medium text-sm tracking-wide">
+                <a href="#programs" class="text-gray-300 hover:text-white transition-colors">Programs</a>
+                <a href="#facility" class="text-gray-300 hover:text-white transition-colors">Facility</a>
+                <a href="#pricing" class="text-gray-300 hover:text-white transition-colors">Pricing</a>
+                <a href="#location" class="text-gray-300 hover:text-white transition-colors">Location</a>
+                <button onclick="openModal()" class="bg-brand-accent text-white px-6 py-2.5 rounded-sm font-heading tracking-wider uppercase text-sm shadow-neon hover:shadow-neon-hover hover:bg-brand-accentHover transition-all transform hover:-translate-y-0.5">
+                    Free Trial Pass
+                </button>
+            </nav>
+
+            <!-- Mobile Hamburger -->
+            <button class="md:hidden text-white text-3xl" onclick="toggleMobileMenu()">
+                <i class="ph ph-list"></i>
+            </button>
         </div>
-      </div>
-      <div class="header-controls">
-        <div id="sync-pill" class="sync-pill hidden">
-          <span class="pulse"></span>
-          <span>LIVE</span>
+
+        <!-- Mobile Menu Drawer -->
+        <div id="mobileMenu" class="hidden md:hidden bg-brand-card absolute w-full border-b border-gray-800 shadow-xl">
+            <div class="flex flex-col px-4 pt-2 pb-6 gap-4 text-center">
+                <a href="#programs" class="text-white font-medium py-2 border-b border-gray-800" onclick="toggleMobileMenu()">Programs</a>
+                <a href="#facility" class="text-white font-medium py-2 border-b border-gray-800" onclick="toggleMobileMenu()">Facility</a>
+                <a href="#pricing" class="text-white font-medium py-2 border-b border-gray-800" onclick="toggleMobileMenu()">Pricing</a>
+                <a href="#location" class="text-white font-medium py-2 border-b border-gray-800" onclick="toggleMobileMenu()">Location</a>
+                <button onclick="openModal(); toggleMobileMenu();" class="bg-brand-accent text-white py-3 rounded-sm font-heading tracking-wider uppercase mt-2">
+                    Free Trial Pass
+                </button>
+            </div>
         </div>
-        <button id="theme-btn" class="icon-button modern-icon-btn" aria-label="Toggle Theme">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-        </button>
-      </div>
     </header>
 
-    <!-- 1. Aesthetic Minimalist Owner Gate -->
-    <main id="view-auth" class="panel hidden">
-      <div class="auth-wrapper">
-        <div class="auth-hero-intro">
-          <div class="portal-badge">
-            <span class="portal-badge-dot"></span> RESTRICTED ACCESS
-          </div>
-          <h1 class="portal-headline">EXECUTIVE CONSOLE</h1>
-          <p class="portal-subtext">Secure administrative gateway for member records, validity ledgers, and billing management.</p>
+    <!-- Hero Section -->
+    <section class="relative min-h-screen flex items-center pt-40">
+        <!-- Background Image -->
+        <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2000&auto=format&fit=crop" alt="The Beast Gym Floor" class="w-full h-full object-cover opacity-40">
+            <div class="absolute inset-0 hero-overlay"></div>
         </div>
 
-        <div class="card auth-card">
-          <div id="owner-lockout-banner" class="status-pill status-expired mb-4 hidden" style="text-align: center;">
-            🔒 <span id="owner-lockout-text">Security Lockout Active</span>
-          </div>
-
-          <div class="field-group" style="margin-bottom: 12px;">
-            <label for="input-owner-pin">Master Security PIN</label>
-            <div class="input-with-icon">
-              <!-- Prevent browser password saving and autofill prompts -->
-              <input type="password" id="input-owner-pin" placeholder="Enter owner master PIN" maxlength="20" autocomplete="new-password" data-lpignore="true" />
+        <!-- Content -->
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
+            <span class="text-brand-accent font-bold tracking-[0.2em] uppercase text-sm mb-4">Welcome to the Elite</span>
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-heading font-bold text-white uppercase leading-tight mb-6 tracking-tight">
+                Unleash Your <br class="hidden md:block"> <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500 text-glow">Ultimate Potential</span>
+            </h1>
+            <p class="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-10 font-light">
+                Rewari's premier fitness destination for strength, conditioning, and total body transformation.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                <button onclick="openModal()" class="w-full sm:w-auto bg-brand-accent text-white px-8 py-4 rounded-sm font-heading text-lg tracking-wider uppercase shadow-neon hover:shadow-neon-hover hover:bg-brand-accentHover transition-all transform hover:-translate-y-1">
+                    Book Free Trial
+                </button>
+                <a href="#programs" class="w-full sm:w-auto border border-white/30 text-white px-8 py-4 rounded-sm font-heading text-lg tracking-wider uppercase hover:bg-white hover:text-black transition-all flex items-center justify-center">
+                    Explore Programs
+                </a>
             </div>
-            <div id="owner-pin-error" style="font-size: 12px; font-weight: 600; color: var(--rose-text); margin-top: 6px;"></div>
-          </div>
 
-          <div style="text-align: right; margin-top: 4px; margin-bottom: 12px;">
-            <a href="#" onclick="openResetModal(event)" style="font-size: 10px; font-weight: 700; color: var(--primary); text-decoration: none;">Forgot PIN?</a>
-          </div>
-
-          <button class="btn btn-primary btn-glow" id="btn-login-owner" type="button">
-            Unlock Dashboard &rarr;
-          </button>
-          
-          <div class="auth-footer-tag">
-            <span>Encrypted Cloud Security System</span>
-          </div>
-        </div>
-      </div>
-    </main>
-
-    <!-- 2. Gym Owner Dashboard -->
-    <main id="view-owner" class="panel hidden">
-      <div class="section-title-row">
-        <div>
-          <h1>Dashboard</h1>
-          <p class="text-subtle">Monitor member plans & dues</p>
-        </div>
-        <div class="button-cluster">
-          <button class="icon-button modern-icon-btn" onclick="openPlanEditorModal()" title="Edit Plan Prices">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 20h9"></path>
-              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-            </svg>
-          </button>
-          <button class="icon-button modern-icon-btn" id="btn-refresh" title="Sync Records">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.66-5.66"></path>
-            </svg>
-          </button>
-          <button class="icon-button modern-icon-btn btn-logout-icon" onclick="promptOwnerExit()" title="Log Out">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
-              <line x1="12" y1="2" x2="12" y2="12"></line>
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <div class="card compact-stats-bar mb-4">
-        <div class="stat-col">
-          <span class="stat-lbl">Active Members</span>
-          <span class="stat-num" id="stat-total">0</span>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-col">
-          <span class="stat-lbl">Expiring (&le; 7 Days)</span>
-          <span class="stat-num text-warning" id="stat-expiring">0</span>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-col">
-          <span class="stat-lbl">Expired</span>
-          <span class="stat-num text-danger" id="stat-expired">0</span>
-        </div>
-      </div>
-
-      <div class="card p-0 overflow-hidden">
-        <div class="tabs-nav">
-          <button class="tab-item tab-plus" id="btn-owner-add" onclick="setOwnerTab('add')" title="New Admission">+</button>
-          <button class="tab-item active" id="btn-owner-all" onclick="setOwnerTab('all')">All Members</button>
-          <button class="tab-item" id="btn-owner-expiring" onclick="setOwnerTab('expiring')">Expiring Queue</button>
-          <button class="tab-item" id="btn-owner-dues" onclick="setOwnerTab('dues')">Pending Dues</button>
-        </div>
-
-        <div id="owner-table-view" class="p-4">
-          <input type="text" id="owner-search" class="search-input" placeholder="🔍 Search member..." autocomplete="off" />
-          <div class="table-container">
-            <table class="minimal-table">
-              <thead>
-                <tr>
-                  <th>Status</th>
-                  <th>Member</th>
-                  <th>Date</th>
-                  <th>Plan</th>
-                  <th>Due</th>
-                  <th class="text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody id="owner-member-rows"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div id="owner-form-view" class="p-6 hidden">
-          <!-- Prevent browser form caching with autocomplete="off" -->
-          <form id="admission-form" class="admission-grid" autocomplete="off">
-            <div class="field-group">
-              <label for="f-name">Full Name *</label>
-              <input type="text" id="f-name" required placeholder="e.g. Rahul Sharma" autocomplete="off" />
+            <!-- Trust Badges -->
+            <div class="mt-16 flex flex-wrap justify-center gap-6 md:gap-12 text-sm text-gray-400 font-medium tracking-wide uppercase">
+                <div class="flex items-center gap-2"><i class="ph ph-seal-check text-brand-accent text-xl"></i> Certified Master Trainers</div>
+                <div class="flex items-center gap-2"><i class="ph ph-barbell text-brand-accent text-xl"></i> Elite Equipment</div>
+                <div class="flex items-center gap-2"><i class="ph ph-apple-logo text-brand-accent text-xl"></i> Personalized Nutrition</div>
             </div>
-            <div class="field-group">
-              <label for="f-phone">Phone Number / Member ID <span style="font-weight:400; text-transform:none; color:var(--emerald-text);">(Optional)</span></label>
-              <input type="text" id="f-phone" placeholder="Enter phone or leave blank for auto ID" autocomplete="off" />
+        </div>
+    </section>
+
+    <!-- Programs & Services Grid -->
+    <section id="programs" class="py-24 bg-brand-dark">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-heading font-bold text-white uppercase mb-4">Elite Offerings</h2>
+                <div class="h-1 w-24 bg-brand-accent mx-auto"></div>
             </div>
-            <div class="field-group">
-              <label for="f-plan">Plan Name *</label>
-              <select id="f-plan">
-                <optgroup label="Without Treadmill">
-                  <option value="1 Month (Without Treadmill)" data-days="30" data-price="1200">1 Month - ₹1,200</option>
-                  <option value="3 Month (Without Treadmill)" data-days="90" data-price="3000">3 Month - ₹3,000</option>
-                  <option value="6 Month (Without Treadmill)" data-days="180" data-price="5500">6 Month - ₹5,500</option>
-                  <option value="12 Month (Without Treadmill)" data-days="365" data-price="10000">12 Month - ₹10,000</option>
-                </optgroup>
-                <optgroup label="With Treadmill">
-                  <option value="1 Month (With Treadmill)" data-days="30" data-price="1500">1 Month - ₹1,500</option>
-                  <option value="3 Month (With Treadmill)" data-days="90" data-price="4000">3 Month - ₹4,000</option>
-                  <option value="6 Month (With Treadmill)" data-days="180" data-price="7500">6 Month - ₹7,500</option>
-                  <option value="12 Month (With Treadmill)" data-days="365" data-price="14000">12 Month - ₹14,000</option>
-                </optgroup>
-                <option value="Custom Plan" data-days="custom" data-price="0">Custom Plan</option>
-              </select>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Program Cards Array -->
+                <!-- 1 -->
+                <div class="group relative overflow-hidden rounded-xl bg-brand-card border border-gray-800 hover:border-brand-accent/50 transition-all duration-300">
+                    <img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=800&auto=format&fit=crop" class="w-full h-48 object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500">
+                    <div class="p-6 relative z-10 bg-gradient-to-t from-brand-card via-brand-card to-transparent -mt-20">
+                        <h3 class="text-2xl font-heading text-white uppercase mb-2 mt-8">Weight Training</h3>
+                        <p class="text-sm text-gray-400 mb-4 line-clamp-2">Heavy iron, hypertrophy, and state-of-the-art biomechanical machines.</p>
+                    </div>
+                </div>
+                <!-- 2 -->
+                <div class="group relative overflow-hidden rounded-xl bg-brand-card border border-gray-800 hover:border-brand-accent/50 transition-all duration-300">
+                    <img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=800&auto=format&fit=crop" class="w-full h-48 object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500">
+                    <div class="p-6 relative z-10 bg-gradient-to-t from-brand-card via-brand-card to-transparent -mt-20">
+                        <h3 class="text-2xl font-heading text-white uppercase mb-2 mt-8">CrossFit & Functional</h3>
+                        <p class="text-sm text-gray-400 mb-4 line-clamp-2">High-intensity interval, agility, and pure endurance conditioning.</p>
+                    </div>
+                </div>
+                <!-- 3 -->
+                <div class="group relative overflow-hidden rounded-xl bg-brand-card border border-gray-800 hover:border-brand-accent/50 transition-all duration-300">
+                    <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=800&auto=format&fit=crop" class="w-full h-48 object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500">
+                    <div class="p-6 relative z-10 bg-gradient-to-t from-brand-card via-brand-card to-transparent -mt-20">
+                        <h3 class="text-2xl font-heading text-white uppercase mb-2 mt-8">Personal Training</h3>
+                        <p class="text-sm text-gray-400 mb-4 line-clamp-2">1-on-1 custom goal mapping, posture correction, and accountability.</p>
+                    </div>
+                </div>
+                <!-- 4 -->
+                <div class="group relative overflow-hidden rounded-xl bg-brand-card border border-gray-800 hover:border-brand-accent/50 transition-all duration-300">
+                    <img src="https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=800&auto=format&fit=crop" class="w-full h-48 object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500">
+                    <div class="p-6 relative z-10 bg-gradient-to-t from-brand-card via-brand-card to-transparent -mt-20">
+                        <h3 class="text-2xl font-heading text-white uppercase mb-2 mt-8">Zumba</h3>
+                        <p class="text-sm text-gray-400 mb-4 line-clamp-2">High-energy cardio routines and rhythm-driven workouts.</p>
+                    </div>
+                </div>
+                <!-- 5 -->
+                <div class="group relative overflow-hidden rounded-xl bg-brand-card border border-gray-800 hover:border-brand-accent/50 transition-all duration-300">
+                    <img src="https://images.unsplash.com/photo-1574680096145-d05b474e2155?q=80&w=800&auto=format&fit=crop" class="w-full h-48 object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500">
+                    <div class="p-6 relative z-10 bg-gradient-to-t from-brand-card via-brand-card to-transparent -mt-20">
+                        <h3 class="text-2xl font-heading text-white uppercase mb-2 mt-8">Aerobics</h3>
+                        <p class="text-sm text-gray-400 mb-4 line-clamp-2">Cardiovascular endurance, stamina building, and massive fat loss.</p>
+                    </div>
+                </div>
+            
+                <!-- 7 (Spans full width on tablet/desktop) -->
+                <div class="group relative overflow-hidden rounded-xl bg-brand-card border border-gray-800 hover:border-brand-accent/50 transition-all duration-300 md:col-span-2 lg:col-span-3 lg:w-2/3 lg:mx-auto">
+                    <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=1200&auto=format&fit=crop" class="w-full h-48 md:h-64 object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500">
+                    <div class="p-6 relative z-10 bg-gradient-to-t from-brand-card via-brand-card/90 to-transparent -mt-24 md:-mt-32">
+                        <h3 class="text-2xl md:text-3xl font-heading text-white uppercase mb-2 mt-8 text-center">Nutrition & Diet Consultation</h3>
+                        <p class="text-sm md:text-base text-gray-400 mb-4 text-center max-w-lg mx-auto">Certified meal plans, macro tracking, and lifestyle coaching tailored entirely to your personal goals.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Train Here (USP) -->
+    <section id="facility" class="py-24 bg-[#050505] relative overflow-hidden">
+        <!-- Decorative Glow -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-accent opacity-5 blur-[150px] rounded-full pointer-events-none"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div>
+                    <h2 class="text-4xl md:text-5xl font-heading font-bold text-white uppercase mb-6 leading-tight">Engineered for <br><span class="text-brand-accent">Excellence</span></h2>
+                    <p class="text-gray-400 mb-10 text-lg">We didn't just build a gym; we built a high-performance sanctuary. Every detail of The Beast Gym is designed to eliminate distractions and maximize results.</p>
+                    
+                    <div class="space-y-6">
+                        <div class="flex items-start gap-4">
+                            <div class="bg-brand-card p-3 rounded-lg text-brand-accent"><i class="ph-fill ph-gear text-2xl"></i></div>
+                            <div>
+                                <h4 class="text-white font-bold uppercase tracking-wide">Imported Bio-Mechanic Equipment</h4>
+                                <p class="text-sm text-gray-400 mt-1">State-of-the-art machinery engineered for optimal muscle isolation and safety.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="bg-brand-card p-3 rounded-lg text-brand-accent"><i class="ph-fill ph-users text-2xl"></i></div>
+                            <div>
+                                <h4 class="text-white font-bold uppercase tracking-wide">Certified Male & Female Trainers</h4>
+                                <p class="text-sm text-gray-400 mt-1">Expert guidance available for everyone, ensuring a comfortable and professional environment.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="bg-brand-card p-3 rounded-lg text-brand-accent"><i class="ph-fill ph-wind text-2xl"></i></div>
+                            <div>
+                                <h4 class="text-white font-bold uppercase tracking-wide">Spacious & Climate-Controlled</h4>
+                                <p class="text-sm text-gray-400 mt-1">Dedicated functional zones with advanced airflow systems so you breathe easy during grueling sets.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="bg-brand-card p-3 rounded-lg text-brand-accent"><i class="ph-fill ph-shield-check text-2xl"></i></div>
+                            <div>
+                                <h4 class="text-white font-bold uppercase tracking-wide">Hygienic Locker Rooms</h4>
+                                <p class="text-sm text-gray-400 mt-1">Immaculate changing areas and a supportive, drama-free community atmosphere.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1576678927484-cc907957088c?q=80&w=1000&auto=format&fit=crop" alt="Gym Facility" class="rounded-xl shadow-2xl border border-gray-800">
+                    <div class="absolute -bottom-6 -left-6 bg-brand-card p-6 rounded-xl border border-gray-800 shadow-xl hidden md:block">
+                        <div class="text-4xl font-heading font-bold text-white">10K+</div>
+                        <div class="text-sm text-brand-accent font-bold uppercase tracking-wider">Lbs of Free Weights</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Tiers -->
+    <section id="pricing" class="py-24 bg-brand-dark">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-heading font-bold text-white uppercase mb-4">Membership Tiers</h2>
+                <div class="h-1 w-24 bg-brand-accent mx-auto"></div>
+                <p class="text-gray-400 mt-6 max-w-xl mx-auto">Straightforward pricing. No hidden joining fees. Invest in yourself.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 items-center max-w-5xl mx-auto">
+                <!-- Tier 1 -->
+                <div class="bg-brand-card rounded-xl p-8 border border-gray-800 text-center">
+                    <h3 class="text-xl font-bold text-white uppercase tracking-wider mb-2">Monthly</h3>
+                    <div class="text-gray-400 text-sm mb-6">Commit to the start</div>
+                    <ul class="text-sm text-gray-300 space-y-4 mb-8 text-left">
+                        <li class="flex items-center gap-3"><i class="ph-fill ph-check-circle text-brand-accent"></i> Full gym access</li>
+                        <li class="flex items-center gap-3"><i class="ph-fill ph-check-circle text-brand-accent"></i> Locker room usage</li>
+                        <li class="flex items-center gap-3"><i class="ph-fill ph-check-circle text-brand-accent"></i> 1 Intro PT Session</li>
+                    </ul>
+                    <button class="w-full border border-gray-600 text-white py-3 rounded hover:bg-white hover:text-black transition-colors font-bold uppercase tracking-wider text-sm">Select Plan</button>
+                </div>
+
+                <!-- Tier 2 (Highlighted) -->
+                <div class="bg-[#151515] rounded-xl p-8 border-2 border-brand-accent transform md:scale-110 shadow-neon relative text-center z-10">
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-brand-accent text-white text-xs font-bold uppercase tracking-widest py-1 px-4 rounded-sm">Most Popular</div>
+                    <h3 class="text-2xl font-bold text-white uppercase tracking-wider mb-2 mt-4">Quarterly</h3>
+                    <div class="text-brand-accent text-sm mb-6 font-bold">Best Value for Starters</div>
+                    <ul class="text-sm text-gray-300 space-y-4 mb-8 text-left">
+                        <li class="flex items-center gap-3"><i class="ph-fill ph-check-circle text-brand-accent"></i> All Monthly Perks</li>
+                        <li class="flex items-center gap-3"><i class="ph-fill ph-check-circle text-brand-accent"></i> Group Classes (Zumba/Aerobics)</li>
+                        <li class="flex items-center gap-3"><i class="ph-fill ph-check-circle text-brand-accent"></i> Basic Diet Chart</li>
+                        <li class="flex items-center gap-3"><i class="ph-fill ph-check-circle text-brand-accent"></i> 10% off Merchandise</li>
+                    </ul>
+                    <button class="w-full bg-brand-accent text-white py-3 rounded hover:bg-brand-accentHover transition-colors font-bold uppercase tracking-wider text-sm shadow-neon">Join Now</button>
+                </div>
+
+                <!-- Tier 3 -->
+                <div class="bg-brand-card rounded-xl p-8 border border-gray-800 text-center">
+                    <h3 class="text-xl font-bold text-white uppercase tracking-wider mb-2">Annual VIP</h3>
+                    <div class="text-gray-400 text-sm mb-6">The Lifestyle Choice</div>
+                    <ul class="text-sm text-gray-300 space-y-4 mb-8 text-left">
+                        <li class="flex items-center gap-3"><i class="ph-fill ph-check-circle text-brand-accent"></i> Unlimited Everything</li>
+                        <li class="flex items-center gap-3"><i class="ph-fill ph-check-circle text-brand-accent"></i> Monthly Body Composition</li>
+                        <li class="flex items-center gap-3"><i class="ph-fill ph-check-circle text-brand-accent"></i> Premium App Access</li>
+                    </ul>
+                    <button class="w-full border border-gray-600 text-white py-3 rounded hover:bg-white hover:text-black transition-colors font-bold uppercase tracking-wider text-sm">Select Plan</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Location & Contact -->
+    <section id="location" class="py-24 bg-[#050505]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-12 gap-8 items-stretch">
+                
+                <!-- Contact Info -->
+                <div class="lg:col-span-5 bg-brand-card p-8 md:p-12 rounded-xl border border-gray-800 flex flex-col justify-center">
+                    <h2 class="text-3xl font-heading font-bold text-white uppercase mb-6">Find The Beast</h2>
+                    
+                    <div class="space-y-6">
+                        <div class="flex items-start gap-4">
+                            <i class="ph-fill ph-map-pin text-brand-accent text-2xl mt-1"></i>
+                            <div>
+                                <h4 class="text-white font-bold mb-1">Headquarters</h4>
+                                <p class="text-sm text-gray-400 leading-relaxed">
+                                    Basement of Reliance Smart, SCO 111–112,<br>
+                                    Near ICICI Bank, Brass Market,<br>
+                                    Rewari, Haryana – 123401
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-4">
+                            <i class="ph-fill ph-clock text-brand-accent text-2xl mt-1"></i>
+                            <div>
+                                <h4 class="text-white font-bold mb-1">Operational Hours</h4>
+                                <p class="text-sm text-gray-400">Mon - Sat: 5:00 AM - 10:00 PM<br>Sunday: 6:00 AM - 12:00 PM</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-10 flex flex-col sm:flex-row gap-4">
+                        <a href="tel:+919466024266" class="flex-1 bg-white text-black py-3 rounded flex items-center justify-center gap-2 font-bold uppercase text-sm tracking-wider hover:bg-gray-200 transition-colors">
+                            <i class="ph-fill ph-phone-call text-lg"></i> Call Now
+                        </a>
+                       <a href="https://wa.me/919466024266?text=Hey%20Team%20Beast!%20%F0%9F%92%AA%20I%E2%80%99m%20ready%20to%20elevate%20my%20fitness%20and%20want%20to%20learn%20more%20about%20your%20memberships%2C%20training%20programs%2C%20and%20facility%20at%20Brass%20Market%2C%20Rewari.%20Please%20connect%20with%20me%20to%20get%20started!" target="_blank" class="flex-1 bg-green-600 text-white py-3 rounded flex items-center justify-center gap-2 font-bold uppercase text-sm tracking-wider hover:bg-green-500 transition-colors">
+                            <i class="ph-fill ph-whatsapp-logo text-lg"></i> WhatsApp
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Google Maps Embedded -->
+                <div class="lg:col-span-7 h-96 lg:h-auto rounded-xl overflow-hidden border border-gray-800 grayscale hover:grayscale-0 transition-all duration-700">
+                    <iframe 
+                        src="https://maps.app.goo.gl/7dtRW7iARQQfeHiZ7" 
+                        width="100%" 
+                        height="100%" 
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black pt-16 pb-8 border-t border-gray-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8 mb-12">
+                <div class="md:col-span-2">
+                    <a href="#" class="inline-block mb-4">
+                        <span class="font-heading text-2xl font-bold text-white tracking-widest uppercase">The Beast<span class="text-brand-accent">.</span></span>
+                    </a>
+                    <p class="text-gray-500 text-sm max-w-sm mb-6">The ultimate training facility in Rewari designed for those who are serious about their fitness journey.</p>
+                    <div class="flex gap-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-brand-card flex items-center justify-center text-gray-400 hover:text-white hover:bg-brand-accent transition-colors"><i class="ph-fill ph-instagram-logo text-xl"></i></a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-brand-card flex items-center justify-center text-gray-400 hover:text-white hover:bg-brand-accent transition-colors"><i class="ph-fill ph-facebook-logo text-xl"></i></a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-brand-card flex items-center justify-center text-gray-400 hover:text-white hover:bg-brand-accent transition-colors"><i class="ph-fill ph-youtube-logo text-xl"></i></a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-white font-bold uppercase tracking-wider mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li><a href="#programs" class="hover:text-brand-accent transition-colors">Programs</a></li>
+                        <li><a href="#pricing" class="hover:text-brand-accent transition-colors">Memberships</a></li>
+                        <li><a href="#facility" class="hover:text-brand-accent transition-colors">Our Facility</a></li>
+                        <li><a href="#location" class="hover:text-brand-accent transition-colors">Contact Us</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold uppercase tracking-wider mb-4">Legal</h4>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Gym Rules</a></li>
+                    </ul>
+                </div>
             </div>
             
-            <div class="field-group hidden" id="f-custom-days-group">
-              <label for="f-custom-days">Custom Plan Duration (Days) *</label>
-              <input type="number" id="f-custom-days" min="1" max="3650" placeholder="e.g. 20, 45, 1" autocomplete="off" />
+            <div class="border-t border-gray-900 pt-8 text-center text-xs text-gray-600 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p>&copy; 2026 The Beast Gym. All rights reserved.</p>
+                <p>Engineered for Rewari, HR</p>
             </div>
-
-            <div class="field-group">
-              <label for="f-start-date">Plan Start Date *</label>
-              <input type="date" id="f-start-date" required autocomplete="off" />
-            </div>
-            <div class="field-group">
-              <label for="f-end-date">Calculated End Date</label>
-              <input type="date" id="f-end-date" required readonly class="readonly-field" />
-            </div>
-            <div class="field-group">
-              <label for="f-paid">Amount Paid (₹) *</label>
-              <input type="number" id="f-paid" required placeholder="1200" autocomplete="off" />
-            </div>
-            <div class="field-group">
-              <label for="f-due">Total Due Amount (₹)</label>
-              <input type="number" id="f-due" value="0" placeholder="0" autocomplete="off" />
-            </div>
-            <div class="field-group">
-              <label for="f-mode">Payment Mode</label>
-              <select id="f-mode">
-                <option value="UPI">UPI / QR</option>
-                <option value="Cash">Cash</option>
-                <option value="Card">Card</option>
-              </select>
-            </div>
-            <div class="field-group span-2">
-              <label for="f-notes">Transaction Notes</label>
-              <input type="text" id="f-notes" placeholder="e.g. Initial admission & registration" autocomplete="off" />
-            </div>
-            <div class="span-2 mt-4">
-              <button type="submit" id="btn-save-member" class="btn btn-primary">Save Member & Record Transaction</button>
-            </div>
-          </form>
         </div>
-      </div>
-    </main>
-
-    <!-- 3. Inspector Member Dashboard View -->
-    <main id="view-member" class="panel hidden">
-      <div class="section-title-row">
-        <div>
-          <span class="badge badge-emerald" id="m-plan-badge">Plan</span>
-          <h1 id="m-member-name">Member Name</h1>
-          <span class="text-subtle" id="m-member-sub">ID: ---</span>
-        </div>
-        <div class="button-cluster">
-          <button id="btn-owner-back" class="btn btn-secondary btn-sm" onclick="returnToOwnerHub()">← Back to Dashboard</button>
-        </div>
-      </div>
-
-      <div class="grid grid-hero">
-        <div class="card hero-card">
-          <span class="card-eyebrow">Validity Status</span>
-          <div class="countdown-stat">
-            <span id="m-days-number" class="big-number">0</span>
-            <span class="countdown-unit">Days Remaining</span>
-          </div>
-          <div class="progress-track">
-            <div id="m-progress-bar" class="progress-fill"></div>
-          </div>
-          <div class="dates-flex">
-            <div>
-              <span class="date-label">Start Date</span>
-              <strong id="m-start-date">--</strong>
-            </div>
-            <div class="text-right">
-              <span class="date-label">End Date</span>
-              <strong id="m-end-date">--</strong>
-            </div>
-          </div>
-        </div>
-
-        <div class="card dues-card">
-          <div>
-            <span class="card-eyebrow">Outstanding Balance</span>
-            <div class="dues-stat">
-              <span class="currency">₹</span>
-              <span id="m-due-amount">0</span>
-            </div>
-          </div>
-          <div id="m-status-pill" class="status-pill status-active">Active Member</div>
-        </div>
-      </div>
-
-      <div class="card mt-6">
-        <h3 class="card-title">Transaction History</h3>
-        <div class="table-container">
-          <table class="minimal-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Amount Paid</th>
-                <th>Payment Mode</th>
-                <th>Notes / Purpose</th>
-              </tr>
-            </thead>
-            <tbody id="m-transaction-rows"></tbody>
-          </table>
-        </div>
-      </div>
-    </main>
-
-    <!-- 4. Owner Renewal Modal -->
-    <div id="renew-modal" class="modal-backdrop hidden">
-      <div class="card modal-box scrollable-modal">
-        <div class="section-title-row">
-          <div>
-            <h3>Renew / Resume Membership</h3>
-            <p class="text-subtle" id="renew-sub-title">Member: --</p>
-          </div>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="closeRenewModal()">✕</button>
-        </div>
-
-        <form id="renew-form" class="admission-grid mt-4" autocomplete="off">
-          <input type="hidden" id="r-member-id" />
-          <input type="hidden" id="r-full-name" />
-
-          <div class="field-group span-2">
-            <label for="r-plan">Select New Plan *</label>
-            <select id="r-plan">
-              <optgroup label="Without Treadmill">
-                <option value="1 Month (Without Treadmill)" data-days="30" data-price="1200">1 Month - ₹1,200</option>
-                <option value="3 Month (Without Treadmill)" data-days="90" data-price="3000">3 Month - ₹3,000</option>
-                <option value="6 Month (Without Treadmill)" data-days="180" data-price="5500">6 Month - ₹5,500</option>
-                <option value="12 Month (Without Treadmill)" data-days="365" data-price="10000">12 Month - ₹10,000</option>
-              </optgroup>
-              <optgroup label="With Treadmill">
-                <option value="1 Month (With Treadmill)" data-days="30" data-price="1500">1 Month - ₹1,500</option>
-                <option value="3 Month (With Treadmill)" data-days="90" data-price="4000">3 Month - ₹4,000</option>
-                <option value="6 Month (With Treadmill)" data-days="180" data-price="7500">6 Month - ₹7,500</option>
-                <option value="12 Month (With Treadmill)" data-days="365" data-price="14000">12 Month - ₹14,000</option>
-              </optgroup>
-              <option value="Custom Plan" data-days="custom" data-price="0">Custom Plan</option>
-            </select>
-          </div>
-          
-          <div class="field-group span-2 hidden" id="r-custom-days-group">
-            <label for="r-custom-days">Custom Plan Duration (Days) *</label>
-            <input type="number" id="r-custom-days" min="1" max="3650" placeholder="e.g. 20, 45, 1" autocomplete="off" />
-          </div>
-
-          <div class="field-group">
-            <label for="r-start-date">Resume / Start Date *</label>
-            <input type="date" id="r-start-date" required autocomplete="off" />
-          </div>
-          <div class="field-group">
-            <label for="r-end-date">New End Date</label>
-            <input type="date" id="r-end-date" required readonly class="readonly-field" />
-          </div>
-          <div class="field-group">
-            <label for="r-paid">Amount Paid (₹) *</label>
-            <input type="number" id="r-paid" required placeholder="e.g. 1200" autocomplete="off" />
-          </div>
-          <div class="field-group">
-            <label for="r-due">Remaining Due (₹)</label>
-            <input type="number" id="r-due" value="0" autocomplete="off" />
-          </div>
-          <div class="field-group span-2">
-            <label for="r-mode">Payment Mode</label>
-            <select id="r-mode">
-              <option value="UPI">UPI / QR</option>
-              <option value="Cash">Cash</option>
-              <option value="Card">Card</option>
-            </select>
-          </div>
-          <div class="span-2 mt-4">
-            <button type="submit" id="btn-submit-renew" class="btn btn-primary">Confirm Renewal & Activate Plan</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Edit Plan Prices Modal (Scrollable Sheet) -->
-    <div id="plan-editor-modal" class="modal-backdrop hidden">
-      <div class="card modal-box scrollable-modal" style="max-width: 450px;">
-        <div class="section-title-row">
-          <div>
-            <h3>Manage Gym Plan Prices</h3>
-            <p class="text-subtle">Update pricing reflected across all portals</p>
-          </div>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="closePlanEditorModal()">✕</button>
-        </div>
-
-        <form id="plan-editor-form" class="admission-grid mt-4" onsubmit="handlePlanPricesSubmit(event)" autocomplete="off">
-          <div class="field-group span-2"><strong style="font-size:11px; color:var(--primary);">WITHOUT TREADMILL</strong></div>
-          <div class="field-group">
-            <label>1 Month (₹)</label>
-            <input type="number" id="ep-1m-no" required autocomplete="off" />
-          </div>
-          <div class="field-group">
-            <label>3 Month (₹)</label>
-            <input type="number" id="ep-3m-no" required autocomplete="off" />
-          </div>
-          <div class="field-group">
-            <label>6 Month (₹)</label>
-            <input type="number" id="ep-6m-no" required autocomplete="off" />
-          </div>
-          <div class="field-group">
-            <label>12 Month (₹)</label>
-            <input type="number" id="ep-12m-no" required autocomplete="off" />
-          </div>
-
-          <div class="field-group span-2 mt-2"><strong style="font-size:11px; color:var(--primary);">WITH TREADMILL</strong></div>
-          <div class="field-group">
-            <label>1 Month (₹)</label>
-            <input type="number" id="ep-1m-yes" required autocomplete="off" />
-          </div>
-          <div class="field-group">
-            <label>3 Month (₹)</label>
-            <input type="number" id="ep-3m-yes" required autocomplete="off" />
-          </div>
-          <div class="field-group">
-            <label>6 Month (₹)</label>
-            <input type="number" id="ep-6m-yes" required autocomplete="off" />
-          </div>
-          <div class="field-group">
-            <label>12 Month (₹)</label>
-            <input type="number" id="ep-12m-yes" required autocomplete="off" />
-          </div>
-
-          <div class="span-2 mt-4">
-            <button type="submit" class="btn btn-primary" id="btn-save-prices">Save & Sync Prices</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Custom Confirmation Modal (Logout & Delete) -->
-    <div id="custom-alert-modal" class="modal-backdrop hidden">
-      <div class="card modal-box" style="max-width: 380px; text-align: center; margin: auto;">
-        <h3 id="custom-alert-title" style="font-size: 1.15rem; font-weight: 800; margin-bottom: 8px; color: var(--text-main);">Confirm Action</h3>
-        <p id="custom-alert-msg" class="text-subtle" style="font-size: 13px; margin-bottom: 20px;"></p>
-        <div style="display: flex; gap: 10px; justify-content: center;">
-          <button type="button" class="btn btn-secondary btn-sm" id="custom-alert-cancel" style="width: 100%;">Cancel</button>
-          <button type="button" class="btn btn-primary btn-sm" id="custom-alert-confirm" style="width: 100%;">Confirm</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ==========================================
-         COMPLIANCE FOOTER (Required by Razorpay)
-         ========================================== -->
-    <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); text-align: center; font-size: 11px; color: var(--text-muted);">
-      <p style="margin-bottom: 8px;"><strong>SD Labs</strong> | Support: dev.shubham.tech@gmail.com | Phone: +91 9467055294</p>
-      <p style="margin-bottom: 10px;">Address: sec 3, Rewari, Haryana, India</p>
-      <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
-        <a href="#" onclick="openPolicyModal('contact'); return false;" style="color: var(--primary); text-decoration: none;">Contact Us</a>
-        <a href="#" onclick="openPolicyModal('pricing'); return false;" style="color: var(--primary); text-decoration: none;">Pricing Details</a>
-        <a href="#" onclick="openPolicyModal('terms'); return false;" style="color: var(--primary); text-decoration: none;">Terms & Conditions</a>
-        <a href="#" onclick="openPolicyModal('privacy'); return false;" style="color: var(--primary); text-decoration: none;">Privacy Policy</a>
-        <a href="#" onclick="openPolicyModal('shipping'); return false;" style="color: var(--primary); text-decoration: none;">Shipping/Delivery Policy</a>
-        <a href="#" onclick="openPolicyModal('refund'); return false;" style="color: var(--primary); text-decoration: none;">Cancellation & Refund Policy</a>
-      </div>
     </footer>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="toast hidden"></div>
-  </div>
-  
-<!-- Password Reset Modal -->
-<div id="reset-modal" class="modal-backdrop hidden">
-  <div class="card auth-card modal-box" onclick="event.stopPropagation()">
-    <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 4px;">Reset Master PIN</h3>
-    <p class="text-subtle" id="reset-desc" style="margin-bottom: 14px;">Enter your registered admin email address to receive an OTP.</p>
-    
-    <div id="reset-step-1">
-      <div class="field-group">
-        <label>Admin Email</label>
-        <input type="email" id="reset-email" placeholder="owner@email.com" autocomplete="off" />
-      </div>
-      <div class="modal-action-buttons" style="display: flex; gap: 10px; margin-top: 14px; width: 100%;">
-        <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeResetModal()">Cancel</button>
-        <button type="button" class="btn btn-primary btn-glow" style="flex: 1;" onclick="requestOTP()">Send OTP</button>
-      </div>
+    <!-- Mobile Sticky Bottom Bar (Visible only on mobile) -->
+    <div class="md:hidden fixed bottom-0 left-0 w-full bg-black/90 backdrop-blur-md border-t border-gray-800 z-50 flex justify-around py-3 px-2 pb-safe">
+        <a href="tel:+910000000000" class="flex flex-col items-center gap-1 text-gray-400 hover:text-white">
+            <i class="ph-fill ph-phone text-xl"></i>
+            <span class="text-[10px] font-bold uppercase">Call</span>
+        </a>
+        <button onclick="openModal()" class="flex flex-col items-center gap-1 text-brand-accent">
+            <i class="ph-fill ph-ticket text-xl text-glow"></i>
+            <span class="text-[10px] font-bold uppercase">Free Trial</span>
+        </button>
+        <a href="https://maps.google.com/?q=Brass+Market,Rewari,Haryana" target="_blank" class="flex flex-col items-center gap-1 text-gray-400 hover:text-white">
+            <i class="ph-fill ph-navigation-arrow text-xl"></i>
+            <span class="text-[10px] font-bold uppercase">Directions</span>
+        </a>
     </div>
 
-    <div id="reset-step-2" class="hidden">
-      <div class="field-group">
-        <label>6-Digit OTP</label>
-        <input type="text" id="reset-otp" placeholder="123456" maxlength="6" autocomplete="off" />
-      </div>
-      <div class="field-group">
-        <label>New Master PIN</label>
-        <input type="password" id="reset-new-pin" placeholder="Enter new PIN" autocomplete="new-password" data-lpignore="true" />
-      </div>
-      <div class="modal-action-buttons" style="display: flex; gap: 10px; margin-top: 14px; width: 100%;">
-        <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeResetModal()">Cancel</button>
-        <button type="button" class="btn btn-primary btn-glow" style="flex: 1;" onclick="submitNewPin()">Save New PIN</button>
-      </div>
-    </div>
-  </div>
-</div>
+    <!-- Lead Capture Modal Form -->
+    <div id="trialModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+        
+        <!-- Modal Content -->
+        <div class="relative bg-[#0d0d0d] border border-gray-800 rounded-xl w-full max-w-md p-8 shadow-2xl transform scale-95 opacity-0 transition-all duration-300" id="modalContent">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
+                <i class="ph ph-x text-2xl"></i>
+            </button>
+            
+            <div class="text-center mb-6">
+                <h3 class="text-2xl font-heading font-bold text-white uppercase">Claim Your <span class="text-brand-accent">Free Pass</span></h3>
+                <p class="text-gray-400 text-sm mt-2">Experience The Beast Gym for 1 day, completely on us.</p>
+            </div>
 
-  <!-- POLICY & COMPLIANCE MODAL CONTAINER -->
-  <div id="policy-modal" class="modal-backdrop hidden">
-    <div class="card modal-box scrollable-modal" style="max-width: 600px; text-align: left;">
-      <div class="section-title-row">
-        <h3 id="policy-modal-title" style="font-size: 18px; font-weight: 800;">Policy</h3>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="closePolicyModal()">✕</button>
-      </div>
-      <div id="policy-modal-body" class="text-subtle" style="font-size: 13px; line-height: 1.6; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
-        <!-- Dynamic Content -->
-      </div>
-    </div>
-  </div>
-
-<!-- Modern Pre-Expiry Warning Modal Card -->
-<div id="early-warning-modal" class="modal-backdrop hidden" style="z-index: 2500;">
-  <div class="card modal-box" style="max-width: 400px; text-align: left; position: relative; padding: 24px; margin: auto;">
-    <!-- Cross Button: Closes the modal for the current session/view -->
-    <button type="button" onclick="closeEarlyWarningModal()" style="position: absolute; top: 16px; right: 16px; background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-muted); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; cursor: pointer; transition: all 0.2s;">✕</button>
-    
-    <!-- Modern Minimalist Alert Triangle SVG Icon -->
-    <div style="width: 48px; height: 48px; border-radius: 14px; background: rgba(245, 158, 11, 0.1); display: flex; align-items: center; justify-content: center; color: #f59e0b; margin-bottom: 16px;">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-        <line x1="12" y1="9" x2="12" y2="13"></line>
-        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-      </svg>
+            <form onsubmit="submitForm(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Full Name</label>
+                    <input type="text" required class="w-full bg-brand-card border border-gray-700 text-white rounded px-4 py-3 focus:outline-none focus:border-brand-accent transition-colors">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Phone Number</label>
+                    <input type="tel" required class="w-full bg-brand-card border border-gray-700 text-white rounded px-4 py-3 focus:outline-none focus:border-brand-accent transition-colors">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Primary Goal</label>
+                    <select required class="w-full bg-brand-card border border-gray-700 text-white rounded px-4 py-3 focus:outline-none focus:border-brand-accent transition-colors appearance-none">
+                        <option value="" disabled selected>Select your goal</option>
+                        <option value="muscle">Muscle Gain / Hypertrophy</option>
+                        <option value="fatloss">Fat Loss / Conditioning</option>
+                        <option value="general">General Fitness</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="w-full bg-brand-accent text-white py-4 rounded font-bold uppercase tracking-wider mt-4 hover:bg-brand-accentHover transition-colors shadow-neon">
+                    Get My Free Pass
+                </button>
+            </form>
+        </div>
     </div>
 
-    <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 6px; color: var(--text-main);">Software License Expiring Soon</h3>
-    <p class="text-subtle" style="font-size: 13px; margin-bottom: 20px; line-height: 1.4;">
-      Your 30-day software cycle is ending soon. You can pay your bill early to ensure continuous access without any dashboard interruptions.
-    </p>
+    <!-- Interactive Scripts -->
+    <script>
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+        }
 
-    <div style="display: flex; gap: 10px;">
-      <!-- Remind Me Later Button: Snoozes the card for the rest of the day using snoozeEarlyWarning() -->
-      <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="snoozeEarlyWarning()">Remind Me Later</button>
-      
-      <!-- Pay Bill Button: Launches Razorpay payment flow -->
-      <button type="button" class="btn btn-primary btn-glow" style="flex: 1;" onclick="payEarlyFromModal()">Pay Bill Now &rarr;</button>
-    </div>
-  </div>
-</div>
-  
-  <script src="app.js"></script>
-  <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then((reg) => console.log('Service Worker registered successfully', reg))
-        .catch((err) => console.log('Service Worker registration failed', err));
-    });
-  }
-</script>
+        // Modal Logic
+        const modal = document.getElementById('trialModal');
+        const modalContent = document.getElementById('modalContent');
+
+        function openModal() {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            // Slight delay for animation
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        // Handle Form Submit (Simulation)
+        function submitForm(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerText;
+            
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Processing...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.innerHTML = '<i class="ph-fill ph-check-circle"></i> Pass Sent to Phone!';
+                btn.classList.replace('bg-brand-accent', 'bg-green-600');
+                
+                setTimeout(() => {
+                    closeModal();
+                    // Reset form
+                    e.target.reset();
+                    btn.innerHTML = originalText;
+                    btn.classList.replace('bg-green-600', 'bg-brand-accent');
+                    btn.disabled = false;
+                }, 2000);
+            }, 1500);
+        }
+
+        // Header Background on Scroll
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('shadow-lg', 'bg-black/90');
+                header.classList.remove('glass-nav');
+            } else {
+                header.classList.add('glass-nav');
+                header.classList.remove('shadow-lg', 'bg-black/90');
+            }
+        });
+    </script>
 </body>
 </html>
